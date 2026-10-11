@@ -1,0 +1,466 @@
+<title>Barber Battle Personagens</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700&family=Lilita+One&family=Baloo+2:wght@500;700;800&display=swap">
+<style>
+/* Layout: folha de personagens; cada figura e um SVG montado por pecas (rosto, cabelo, barba, expressao) com variaveis de cor. */
+:root{--pg-bg:#eef0f2;--pg-fg:#17191c;--pg-muted:#5f6670;--pg-line:#d5d9de;--pg-card:#ffffff;--pg-accent:#1f4ec7;--pg-font:"Libre Franklin",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pg-bg:#121417;--pg-fg:#e9ecef;--pg-muted:#9aa3ad;--pg-line:#2a2f36;--pg-card:#1a1e23;--pg-accent:#7fa6ff;color-scheme:dark}}
+:root[data-theme="dark"]{--pg-bg:#121417;--pg-fg:#e9ecef;--pg-muted:#9aa3ad;--pg-line:#2a2f36;--pg-card:#1a1e23;--pg-accent:#7fa6ff;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--pg-bg);color:var(--pg-fg);font-family:var(--pg-font);line-height:1.5;font-size:16px}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:36px 72px}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.1;margin:0 0 8px;text-wrap:balance;font-weight:700}
+h2{font-size:clamp(20px,3vw,26px);margin:0 0 6px;line-height:1.2}
+.lead{max-width:62ch;color:var(--pg-muted);margin:0 0 16px}
+section{margin:0 0 56px}
+section>p{max-width:70ch;color:var(--pg-muted);margin:0 0 16px}
+.mudou{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px 24px;margin:0 0 40px;padding:0;list-style:none;font-size:15px}
+.mudou li{padding-left:14px;position:relative}
+.mudou li::before{content:"";position:absolute;left:0;top:.6em;width:6px;height:6px;border-radius:50%;background:var(--pg-accent)}
+.elenco{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:12px}
+.card{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:14px;padding:14px 14px 12px;display:grid;gap:8px}
+.card .fig{aspect-ratio:300/380;max-width:100%;border-radius:10px;background:var(--fundo,#6b4bd6);padding:6px}
+.card .fig svg{width:100%;height:100%;display:block}
+.card b{font-size:17px}
+.card small{display:block;color:var(--pg-muted);font-size:13px;line-height:1.35}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}
+.strip .card{text-align:center}
+.strip .arrow{display:none}
+.etapas{display:grid;gap:18px}
+.zonas{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:720px){.zonas{grid-template-columns:1fr}}
+.zonas .fig{aspect-ratio:300/380;max-width:320px;background:#6b4bd6;border-radius:14px;padding:8px}
+.zonas .fig svg{width:100%;height:100%;display:block}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;overflow:hidden}
+th,td{padding:9px 12px;border-bottom:1px solid var(--pg-line);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--pg-muted);font-size:13px}
+tr:last-child td{border-bottom:0}
+.tag{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:600;color:#fff;background:var(--c)}
+.tbl{overflow-x:auto}
+
+/* ---------- tela de rodada (Pop Cartoon), igual a pagina de layouts ---------- */
+.screen{position:relative;width:100%;aspect-ratio:16/9;max-width:100%;overflow:hidden;container-type:inline-size;display:grid;font-family:var(--body);color:var(--ink);background:var(--bg);border-radius:10px;box-shadow:0 1px 0 rgba(0,0,0,.08),0 12px 32px -16px rgba(0,0,0,.35)}
+.screen *{min-width:0}
+.bar{display:grid;grid-template-columns:5.5cqw 1fr 3.6cqw;align-items:center;gap:.8cqw;font-size:1.5cqw;font-variant-numeric:tabular-nums}
+.bar .trk{height:1.1cqw;background:var(--trk);border-radius:99px;overflow:hidden;display:block}
+.bar .trk i{display:block;height:100%;width:var(--v);background:var(--fill);border-radius:inherit}
+.bar .val{text-align:right}
+.av{display:inline-grid;place-items:center;width:3.4cqw;height:3.4cqw;border-radius:50%;background:var(--c);color:#fff;font-size:1.2cqw;font-weight:700;letter-spacing:.02em;flex:none}
+.tool{display:grid;place-items:center;gap:.3cqw;text-align:center;font-size:1.2cqw;line-height:1.1}
+.tool svg{width:2.6cqw;height:2.6cqw;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.m5{--bg:#6b4bd6;--panel:#fff6e3;--ink:#2a1a52;--orange:#ff7a1a;--teal:#1dc9c0;--yel:#ffd93d;--pink:#ff5fa2;--outline:#2a1a52;--display:"Lilita One","Arial Black",sans-serif;--body:"Baloo 2",system-ui,sans-serif;--trk:#3f2a8a;--fill:#ffd93d}
+.m5 .screen{grid-template-columns:1fr;grid-template-rows:1fr;background:radial-gradient(circle at 50% 120%,#8a6cf0 0%,var(--bg) 55%),var(--bg)}
+.m5 .screen::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,255,.14) 1.2cqw,transparent 1.3cqw) 0 0/8cqw 8cqw}
+.m5 .scene{position:relative;grid-area:1/1;display:grid;place-items:end center;padding:7cqw 0 8cqw}
+.m5 .scene .chair{position:absolute;bottom:3cqw;left:50%;transform:translateX(-50%);width:40cqw;height:9cqw;background:var(--orange);border:.6cqw solid var(--outline);border-radius:3cqw 3cqw 1.2cqw 1.2cqw;box-shadow:0 .9cqw 0 var(--outline)}
+.m5 .scene .port{height:100%;position:relative;z-index:1}
+.m5 .scene .port svg{height:100%;width:auto;filter:drop-shadow(.5cqw .5cqw 0 rgba(42,26,82,.45))}
+.m5 .bubble{position:absolute;top:11cqw;left:62cqw;background:#fff;color:var(--ink);font-family:var(--display);font-size:2.4cqw;padding:1cqw 2cqw;border:.5cqw solid var(--outline);border-radius:2.4cqw;box-shadow:.5cqw .5cqw 0 var(--outline);transform:rotate(4deg);z-index:2}
+.m5 .bubble::after{content:"";position:absolute;left:-1.6cqw;bottom:1.2cqw;width:2.4cqw;height:2.4cqw;background:#fff;border-left:.5cqw solid var(--outline);border-bottom:.5cqw solid var(--outline);transform:skewX(20deg) rotate(10deg)}
+.m5 .clock{position:absolute;top:2cqw;left:2cqw;width:14cqw;height:14cqw;border-radius:50%;background:var(--yel);border:.6cqw solid var(--outline);box-shadow:.6cqw .6cqw 0 var(--outline);display:grid;place-items:center;font-family:var(--display);font-size:4cqw;color:var(--ink);font-variant-numeric:tabular-nums;z-index:2}
+.m5 .clock::before{content:"";position:absolute;top:-2.2cqw;left:50%;transform:translateX(-50%);width:5cqw;height:2.2cqw;background:var(--yel);border:.6cqw solid var(--outline);border-bottom:0;border-radius:1cqw 1cqw 0 0}
+.m5 .tag2{position:absolute;top:2.6cqw;left:50%;transform:translateX(-50%) rotate(-2deg);background:var(--pink);color:#fff;font-family:var(--display);font-size:2.8cqw;padding:.6cqw 2.6cqw;border:.5cqw solid var(--outline);border-radius:99px;box-shadow:.5cqw .5cqw 0 var(--outline);z-index:2;white-space:nowrap}
+.m5 .opp{position:absolute;left:2cqw;bottom:2cqw;width:22cqw;background:var(--panel);border:.5cqw solid var(--outline);border-radius:2cqw;box-shadow:.5cqw .5cqw 0 var(--outline);padding:.9cqw;display:grid;grid-template-columns:6.5cqw 1fr;gap:.8cqw;align-items:center;font-size:1.4cqw;font-weight:700;color:var(--ink);z-index:2}
+.m5 .opp .port{aspect-ratio:1;border-radius:1.2cqw;background:#ffe3a3;border:.35cqw solid var(--outline);overflow:hidden;padding:.3cqw .3cqw 0;display:grid;place-items:end center}
+.m5 .opp .port svg{height:118%;width:auto;margin-bottom:-18%}
+.m5 .opp b{display:block;font-family:var(--display);font-weight:400;font-size:1.9cqw}
+.m5 .opp .bar{grid-template-columns:1fr;gap:.2cqw;margin-top:.3cqw;--trk:#e5d2a8;--fill:var(--teal)}
+.m5 .opp .bar .lbl,.m5 .opp .bar .val{display:none}
+.m5 .opp .bar .trk{height:1cqw;border:.25cqw solid var(--outline)}
+.m5 .prog{position:absolute;bottom:12cqw;left:2cqw;width:22cqw;display:grid;gap:.8cqw;z-index:2}
+.m5 .prog .bar{font-weight:800;color:#fff;font-size:1.5cqw;grid-template-columns:5cqw 1fr 3.6cqw}
+.m5 .prog .bar .trk{height:2cqw;border:.4cqw solid var(--outline);background:#3f2a8a}
+.m5 .prog .bar:nth-child(2){--fill:var(--teal)}
+.m5 .arc{position:absolute;right:0;bottom:0;width:36cqw;height:30cqw;z-index:2}
+.m5 .arc .tool{position:absolute;width:8.6cqw;height:8.6cqw;border-radius:50%;background:#fff;color:var(--ink);border:.5cqw solid var(--outline);box-shadow:0 .7cqw 0 var(--outline);font-family:var(--display);font-size:1.25cqw;gap:.1cqw}
+.m5 .arc .tool svg{width:3cqw;height:3cqw;stroke-width:2.4}
+.m5 .arc .tool.on{background:var(--yel);transform:translateY(.4cqw);box-shadow:0 .3cqw 0 var(--outline)}
+.m5 .arc .t1{right:26cqw;bottom:2.4cqw}
+.m5 .arc .t2{right:17.6cqw;bottom:7.6cqw}
+.m5 .arc .t3{right:9.8cqw;bottom:13.8cqw}
+.m5 .arc .t4{right:2.6cqw;bottom:21cqw}
+.m5 .arc .t5{right:26.6cqw;bottom:12.4cqw;width:7.2cqw;height:7.2cqw}
+.m5 .hand{position:absolute;left:52cqw;top:22cqw;width:9cqw;height:9cqw;z-index:3;transform:rotate(-20deg)}
+.m5 .hand svg{width:100%;height:100%;fill:none;stroke:#2a1a52;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.m5 .chips{position:absolute;left:50cqw;top:30cqw;z-index:3;width:12cqw;height:8cqw;pointer-events:none}
+.m5 .chips i{position:absolute;width:1.4cqw;height:.6cqw;border-radius:2px;background:#2a1a52;transform:rotate(var(--r))}
+.cap{font-size:13px;color:var(--pg-muted);margin:8px 0 0}
+
+/* ---------- Palco com arte Pop Cartoon ---------- */
+.m7{--bg:#6b4bd6;--panel:#fff6e3;--ink:#2a1a52;--orange:#ff7a1a;--teal:#1dc9c0;--yel:#ffd93d;--pink:#ff5fa2;--outline:#2a1a52;--display:"Lilita One","Arial Black",sans-serif;--body:"Baloo 2",system-ui,sans-serif;--trk:#e5d2a8;--fill:#ff7a1a}
+.m7 .screen{grid-template-columns:1fr 1fr;grid-template-rows:11cqw minmax(0,1fr) 11cqw;grid-template-areas:"top top" "podA podB" "aud aud";gap:1.2cqw;padding:1.3cqw;background:radial-gradient(70cqw 50cqw at 50% 8%,#8a6cf0,var(--bg) 65%)}
+.m7 .screen::before{content:"";position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,255,.12) 1.2cqw,transparent 1.3cqw) 0 0/8cqw 8cqw;pointer-events:none}
+.m7 .top{grid-area:top;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1.5cqw;position:relative}
+.m7 .ribbon{background:var(--pink);color:#fff;font-family:var(--display);font-size:2.3cqw;padding:.5cqw 2.2cqw;border:.45cqw solid var(--outline);border-radius:99px;box-shadow:.45cqw .45cqw 0 var(--outline);justify-self:end;transform:rotate(-2deg);white-space:nowrap}
+.m7 .ribbon.r{justify-self:start;background:var(--orange);transform:rotate(2deg)}
+.m7 .marquee{position:relative;background:var(--yel);color:var(--ink);border-radius:1.6cqw;padding:.6cqw 3.2cqw;font-family:var(--display);font-size:5cqw;line-height:1;border:.55cqw solid var(--outline);box-shadow:.6cqw .6cqw 0 var(--outline);font-variant-numeric:tabular-nums}
+.m7 .marquee::before{content:"";position:absolute;inset:.6cqw;border:.55cqw dotted #fff;border-radius:1cqw;opacity:.9;pointer-events:none}
+.m7 .pod{background:var(--panel);border:.5cqw solid var(--outline);border-radius:2cqw;box-shadow:.6cqw .6cqw 0 var(--outline);padding:1cqw;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:.7cqw;min-height:0;color:var(--ink)}
+.m7 .pod.a{grid-area:podA;box-shadow:inset 0 0 0 .5cqw var(--yel),.6cqw .6cqw 0 var(--outline)}
+.m7 .pod.b{grid-area:podB}
+.m7 .pod .nm{display:flex;align-items:center;justify-content:space-between;font-family:var(--display);font-size:2.5cqw;letter-spacing:.02em}
+.m7 .pod .nm span{font-family:var(--body);font-size:1.3cqw;font-weight:800;background:var(--yel);padding:.2cqw 1cqw;border-radius:99px;border:.25cqw solid var(--outline)}
+.m7 .pod .nm .b{background:var(--teal)}
+.m7 .pod .hd{display:grid;grid-template-columns:1fr 1fr;gap:1cqw;min-height:0}
+.m7 .pod .hd .port{height:100%;min-height:0;display:grid;place-items:end center;background:#ffe3a3;border:.35cqw solid var(--outline);border-radius:1.4cqw;padding:.8cqw .8cqw 0;overflow:hidden}
+.m7 .pod .hd .port svg{height:100%;width:auto;max-width:100%}
+.m7 .pod .hd .bars{display:grid;align-content:center;gap:1cqw}
+.m7 .pod .hd .bar{grid-template-columns:1fr;gap:.3cqw;font-size:1.4cqw;font-weight:800}
+.m7 .pod .hd .bar .val{display:none}
+.m7 .pod .hd .bar .trk{height:1.8cqw;border:.3cqw solid var(--outline)}
+.m7 .pod .hd .bar:nth-child(2){--fill:var(--teal)}
+.m7 .combo{justify-self:start;font-family:var(--display);font-size:1.5cqw;background:var(--pink);color:#fff;padding:.2cqw 1.2cqw;border-radius:99px;border:.3cqw solid var(--outline);transform:rotate(-3deg)}
+.m7 .tools{display:grid;grid-template-columns:repeat(5,1fr);gap:.6cqw}
+.m7 .tools .tool{background:#fff;color:var(--ink);border-radius:1cqw;padding:.5cqw 0;font-family:var(--display);border:.35cqw solid var(--outline);box-shadow:0 .5cqw 0 var(--outline)}
+.m7 .tools .tool.on{background:var(--yel);transform:translateY(.3cqw);box-shadow:0 .2cqw 0 var(--outline)}
+.m7 .pod.b .status{display:grid;place-items:center;font-weight:800;font-size:1.5cqw;background:#ffe3a3;border:.35cqw solid var(--outline);border-radius:1cqw;padding:.7cqw}
+.m7 .aud{grid-area:aud;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:1.5cqw;background:rgba(42,26,82,.38);border:.4cqw solid var(--outline);border-radius:2cqw;padding:0 1.5cqw;color:#fff}
+.m7 .aud .seats{display:flex;gap:.6cqw}
+.m7 .aud .av{width:4.2cqw;height:4.2cqw;font-size:1.4cqw;border:.35cqw solid var(--outline)}
+.m7 .aud .hype{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:1cqw}
+.m7 .aud .vai{font-family:var(--display);font-size:1.7cqw;background:var(--orange);color:#fff;border:.35cqw solid var(--outline);border-radius:99px;padding:.3cqw 1.6cqw;box-shadow:0 .4cqw 0 var(--outline)}
+.m7 .aud .vai.t{background:var(--teal)}
+.m7 .aud .hype .trk{height:2.2cqw;border-radius:99px;background:#3f2a8a;border:.35cqw solid var(--outline);overflow:hidden;display:flex}
+.m7 .aud .hype .trk i:first-child{width:58%;background:var(--orange)}
+.m7 .aud .hype .trk i:last-child{flex:1;background:var(--teal)}
+.m7 .aud .cnt{font-weight:800;font-size:1.4cqw;text-align:right;line-height:1.2}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="stubble" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.3" fill="#2a1a52" opacity=".5"/><circle cx="5.5" cy="5.5" r="1.1" fill="#2a1a52" opacity=".4"/></pattern>
+    <pattern id="flannel" width="26" height="26" patternUnits="userSpaceOnUse"><rect width="26" height="26" fill="#d9442b"/><rect width="26" height="9" fill="#8e1b1b" opacity=".55"/><rect width="9" height="26" fill="#8e1b1b" opacity=".55"/><rect width="9" height="9" fill="#5a0f0f" opacity=".5"/></pattern>
+
+    <!-- corpo -->
+    <symbol id="p-shirt" viewBox="0 0 300 380"><path d="M42 392 C 52 332, 106 312, 150 312 C 194 312, 248 332, 258 392 Z" fill="var(--shirt)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M118 316 L150 348 L182 316" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+    <symbol id="p-shirt-flannel" viewBox="0 0 300 380"><path d="M42 392 C 52 332, 106 312, 150 312 C 194 312, 248 332, 258 392 Z" fill="url(#flannel)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M118 316 L150 348 L182 316 M150 348 v44" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/><path d="M122 318 C 118 334, 138 344, 150 348 C 162 344, 182 334, 178 318 Z" fill="#fff6e3" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"/></symbol>
+    <symbol id="p-neck" viewBox="0 0 300 380"><rect x="120" y="258" width="60" height="68" rx="18" fill="var(--skin)" stroke="var(--ink)" stroke-width="6"/><path d="M123 268 C 130 294, 170 294, 177 268 Z" fill="var(--ink)" opacity=".16"/></symbol>
+    <symbol id="p-ears" viewBox="0 0 300 380"><g fill="var(--skin)" stroke="var(--ink)" stroke-width="6"><ellipse cx="64" cy="186" rx="17" ry="24"/><ellipse cx="236" cy="186" rx="17" ry="24"/></g><g fill="var(--ink)" opacity=".18"><ellipse cx="67" cy="188" rx="8" ry="13"/><ellipse cx="233" cy="188" rx="8" ry="13"/></g></symbol>
+
+    <!-- rostos -->
+    <symbol id="p-face-oval" viewBox="0 0 300 380"><path d="M150 66 C 206 66, 240 114, 238 186 C 236 248, 200 294, 150 294 C 100 294, 64 248, 62 186 C 60 114, 94 66, 150 66 Z" fill="var(--skin)" stroke="var(--ink)" stroke-width="6"/><path d="M238 186 C 236 248, 200 294, 150 294 C 186 282, 216 242, 222 186 C 224 150, 214 110, 196 84 C 222 104, 240 140, 238 186 Z" fill="var(--ink)" opacity=".09"/></symbol>
+    <symbol id="p-face-square" viewBox="0 0 300 380"><path d="M150 66 C 206 66, 238 108, 238 176 C 238 244, 228 290, 150 294 C 72 290, 62 244, 62 176 C 62 108, 94 66, 150 66 Z" fill="var(--skin)" stroke="var(--ink)" stroke-width="6"/><path d="M238 176 C 238 244, 228 290, 150 294 C 194 284, 218 246, 222 176 C 224 140, 214 108, 196 84 C 222 102, 238 136, 238 176 Z" fill="var(--ink)" opacity=".09"/></symbol>
+    <symbol id="p-face-round" viewBox="0 0 300 380"><path d="M150 64 C 216 64, 250 124, 248 192 C 246 254, 206 296, 150 296 C 94 296, 54 254, 52 192 C 50 124, 84 64, 150 64 Z" fill="var(--skin)" stroke="var(--ink)" stroke-width="6"/><path d="M248 192 C 246 254, 206 296, 150 296 C 192 284, 226 244, 230 192 C 232 150, 220 112, 200 84 C 230 104, 250 148, 248 192 Z" fill="var(--ink)" opacity=".09"/></symbol>
+
+    <!-- detalhes do rosto -->
+    <symbol id="p-blush" viewBox="0 0 300 380"><g fill="#ff6b8a" opacity=".4"><ellipse cx="102" cy="226" rx="17" ry="9"/><ellipse cx="198" cy="226" rx="17" ry="9"/></g></symbol>
+    <symbol id="p-freckles" viewBox="0 0 300 380"><g fill="var(--ink)" opacity=".35"><circle cx="94" cy="222" r="2.4"/><circle cx="106" cy="230" r="2.2"/><circle cx="100" cy="238" r="2"/><circle cx="114" cy="222" r="2"/><circle cx="206" cy="222" r="2.4"/><circle cx="194" cy="230" r="2.2"/><circle cx="200" cy="238" r="2"/><circle cx="186" cy="222" r="2"/></g></symbol>
+    <symbol id="p-wrinkles" viewBox="0 0 300 380"><g fill="none" stroke="var(--ink)" stroke-width="3" opacity=".4" stroke-linecap="round"><path d="M90 192 q-6 4 -9 12 M88 184 q-8 1 -12 6 M210 192 q6 4 9 12 M212 184 q8 1 12 6 M120 124 q30 -8 60 0"/></g></symbol>
+    <symbol id="p-nose" viewBox="0 0 300 380"><path d="M150 184 C 148 198, 142 206, 139 214" fill="none" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/><ellipse cx="150" cy="220" rx="14" ry="10" fill="var(--skin)" stroke="var(--ink)" stroke-width="5"/><ellipse cx="146" cy="217" rx="4" ry="2.5" fill="#fff" opacity=".5"/></symbol>
+
+    <!-- olhos e sobrancelhas -->
+    <symbol id="p-eyes" viewBox="0 0 300 380"><g><ellipse cx="112" cy="176" rx="17" ry="19" fill="#fff" stroke="var(--ink)" stroke-width="5"/><ellipse cx="188" cy="176" rx="17" ry="19" fill="#fff" stroke="var(--ink)" stroke-width="5"/><circle cx="115" cy="179" r="9.5" fill="var(--iris)"/><circle cx="191" cy="179" r="9.5" fill="var(--iris)"/><circle cx="116" cy="180" r="4.8" fill="var(--ink)"/><circle cx="192" cy="180" r="4.8" fill="var(--ink)"/><circle cx="109" cy="171" r="3.4" fill="#fff"/><circle cx="185" cy="171" r="3.4" fill="#fff"/><path d="M95 168 Q112 150 129 168 M171 168 Q188 150 205 168" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/></g></symbol>
+    <symbol id="p-eyes-happy" viewBox="0 0 300 380"><path d="M95 182 Q112 160 129 182 M171 182 Q188 160 205 182" fill="none" stroke="var(--ink)" stroke-width="7" stroke-linecap="round"/></symbol>
+    <symbol id="p-eyes-wide" viewBox="0 0 300 380"><g><ellipse cx="112" cy="176" rx="19" ry="22" fill="#fff" stroke="var(--ink)" stroke-width="5"/><ellipse cx="188" cy="176" rx="19" ry="22" fill="#fff" stroke="var(--ink)" stroke-width="5"/><circle cx="113" cy="178" r="8" fill="var(--iris)"/><circle cx="187" cy="178" r="8" fill="var(--iris)"/><circle cx="114" cy="179" r="4" fill="var(--ink)"/><circle cx="188" cy="179" r="4" fill="var(--ink)"/><circle cx="108" cy="170" r="3.2" fill="#fff"/><circle cx="182" cy="170" r="3.2" fill="#fff"/></g></symbol>
+    <symbol id="p-brows" viewBox="0 0 300 380"><g fill="var(--hair)" stroke="var(--ink)" stroke-width="4" stroke-linejoin="round"><path d="M84 148 C 96 130, 122 128, 138 142 C 124 142, 104 146, 84 156 Z"/><path d="M216 148 C 204 130, 178 128, 162 142 C 176 142, 196 146, 216 156 Z"/></g></symbol>
+    <symbol id="p-brows-up" viewBox="0 0 300 380"><g fill="var(--hair)" stroke="var(--ink)" stroke-width="4" stroke-linejoin="round"><path d="M84 136 C 96 116, 122 114, 138 128 C 124 128, 104 132, 84 144 Z"/><path d="M216 136 C 204 116, 178 114, 162 128 C 176 128, 196 132, 216 144 Z"/></g></symbol>
+    <symbol id="p-brows-worried" viewBox="0 0 300 380"><g fill="var(--hair)" stroke="var(--ink)" stroke-width="4" stroke-linejoin="round"><path d="M86 156 C 98 146, 120 134, 138 136 C 126 142, 106 150, 86 164 Z"/><path d="M214 156 C 202 146, 180 134, 162 136 C 174 142, 194 150, 214 164 Z"/></g></symbol>
+
+    <!-- bocas -->
+    <symbol id="p-mouth-grin" viewBox="0 0 300 380"><path d="M114 244 C 126 276, 174 276, 186 244 C 168 253, 132 253, 114 244 Z" fill="#5b1e3a" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"/><path d="M121 247 C 132 259, 168 259, 179 247 C 164 252, 136 252, 121 247 Z" fill="#fff"/></symbol>
+    <symbol id="p-mouth-smile" viewBox="0 0 300 380"><path d="M124 248 Q150 270 176 248" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/><path d="M118 244 q2 8 8 10 M182 244 q-2 8 -8 10" fill="none" stroke="var(--ink)" stroke-width="4" stroke-linecap="round" opacity=".6"/></symbol>
+    <symbol id="p-mouth-worried" viewBox="0 0 300 380"><path d="M126 260 C 134 250, 142 252, 150 258 C 158 252, 166 250, 174 260" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/></symbol>
+    <symbol id="p-mouth-o" viewBox="0 0 300 380"><ellipse cx="150" cy="256" rx="11" ry="14" fill="#5b1e3a" stroke="var(--ink)" stroke-width="5"/></symbol>
+
+    <!-- barbas -->
+    <symbol id="p-beard-full" viewBox="0 0 300 380"><path d="M64 192 C 60 246, 84 306, 118 324 C 130 332, 140 328, 150 336 C 160 328, 170 332, 182 324 C 216 306, 240 246, 236 192 C 230 238, 206 270, 150 274 C 94 270, 70 238, 64 192 Z" fill="var(--beard)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M84 240 C 96 262, 112 276, 134 282" fill="none" stroke="#fff" stroke-width="6" opacity=".2" stroke-linecap="round"/><path d="M102 292 q6 10 2 22 M128 304 q6 10 2 22 M172 304 q-6 10 -2 22 M198 292 q-6 10 -2 22" fill="none" stroke="var(--ink)" stroke-width="3" opacity=".35" stroke-linecap="round"/></symbol>
+    <symbol id="p-beard-scraggly" viewBox="0 0 300 380"><path d="M64 192 C 60 240, 80 292, 104 312 L 110 338 L 124 316 L 136 346 L 150 320 L 164 346 L 176 316 L 190 338 L 196 312 C 220 292, 240 240, 236 192 C 230 238, 206 270, 150 274 C 94 270, 70 238, 64 192 Z" fill="var(--beard)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M94 262 l-12 10 M206 262 l12 10 M88 232 l-14 6 M212 232 l14 6" fill="none" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/><path d="M100 290 q8 8 4 20 M128 300 q6 10 2 22 M172 300 q-6 10 -2 22 M200 290 q-8 8 -4 20" fill="none" stroke="var(--ink)" stroke-width="3" opacity=".4" stroke-linecap="round"/></symbol>
+    <symbol id="p-beard-stubble" viewBox="0 0 300 380"><path d="M66 196 C 64 242, 86 292, 150 296 C 214 292, 236 242, 234 196 C 228 238, 206 270, 150 274 C 94 270, 72 238, 66 196 Z" fill="var(--beard)" opacity=".14"/><path d="M66 196 C 64 242, 86 292, 150 296 C 214 292, 236 242, 234 196 C 228 238, 206 270, 150 274 C 94 270, 72 238, 66 196 Z" fill="url(#stubble)"/></symbol>
+    <symbol id="p-beard-goatee" viewBox="0 0 300 380"><path d="M116 268 C 118 302, 182 302, 184 268 C 170 282, 130 282, 116 268 Z" fill="var(--beard)" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"/></symbol>
+    <symbol id="p-mustache" viewBox="0 0 300 380"><path d="M108 234 C 120 218, 140 220, 150 232 C 160 220, 180 218, 192 234 C 184 244, 166 246, 150 240 C 134 246, 116 244, 108 234 Z" fill="var(--beard)" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"/></symbol>
+
+    <!-- cabelos -->
+    <symbol id="p-shade" viewBox="0 0 300 380"><path d="M70 152 C 86 118, 110 106, 150 106 C 192 106, 216 118, 234 150 C 216 130, 190 120, 150 120 C 110 120, 86 130, 70 152 Z" fill="var(--ink)" opacity=".12"/></symbol>
+    <symbol id="p-sideburns" viewBox="0 0 300 380"><g fill="var(--hair)" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"><path d="M62 150 C 58 172, 60 192, 68 200 L 76 150 Z"/><path d="M238 150 C 242 172, 240 192, 232 200 L 224 150 Z"/></g></symbol>
+    <symbol id="p-hair-pomp" viewBox="0 0 300 380"><use href="#p-sideburns"/><use href="#p-shade"/><path d="M68 156 C 70 96, 92 42, 134 32 C 184 22, 230 44, 240 96 C 246 120, 240 140, 236 150 C 222 112, 194 100, 150 100 C 108 100, 84 114, 68 156 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M104 60 C 130 42, 172 40, 208 62" fill="none" stroke="#fff" stroke-width="10" opacity=".3" stroke-linecap="round"/><path d="M122 50 C 112 68, 102 88, 98 104 M164 38 C 160 58, 154 80, 150 100 M206 70 C 196 84, 190 94, 186 104" fill="none" stroke="var(--ink)" stroke-width="3" opacity=".35" stroke-linecap="round"/></symbol>
+    <symbol id="p-hair-curly" viewBox="0 0 300 380"><use href="#p-shade"/><path d="M56 172 a30 30 0 0 1 20 -48 a30 30 0 0 1 36 -36 a34 34 0 0 1 38 -14 a34 34 0 0 1 38 14 a30 30 0 0 1 36 36 a30 30 0 0 1 20 48 C 232 124, 200 104, 150 104 C 100 104, 68 124, 56 172 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><g fill="var(--hair)" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"><path d="M56 172 C 46 190, 48 208, 58 214 L 72 168 Z"/><path d="M244 172 C 254 190, 252 208, 242 214 L 228 168 Z"/></g><g fill="none" stroke="var(--ink)" stroke-width="3" opacity=".3"><circle cx="92" cy="122" r="9"/><circle cx="124" cy="92" r="9"/><circle cx="176" cy="92" r="9"/><circle cx="208" cy="122" r="9"/><circle cx="150" cy="84" r="7"/></g><path d="M110 70 C 130 56, 170 56, 190 70" fill="none" stroke="#fff" stroke-width="8" opacity=".22" stroke-linecap="round"/></symbol>
+    <symbol id="p-hair-buzz" viewBox="0 0 300 380"><path d="M66 152 C 66 94, 102 60, 150 60 C 198 60, 234 94, 234 152 C 220 118, 190 104, 150 104 C 110 104, 80 118, 66 152 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M66 152 C 66 94, 102 60, 150 60 C 198 60, 234 94, 234 152 C 220 118, 190 104, 150 104 C 110 104, 80 118, 66 152 Z" fill="url(#stubble)"/><use href="#p-sideburns"/><path d="M104 76 C 126 66, 174 66, 196 76" fill="none" stroke="#fff" stroke-width="7" opacity=".22" stroke-linecap="round"/></symbol>
+    <symbol id="p-hair-exec" viewBox="0 0 300 380"><use href="#p-sideburns"/><use href="#p-shade"/><path d="M66 152 C 62 92, 94 50, 150 52 C 206 54, 240 88, 236 146 C 230 110, 204 96, 160 100 C 118 102, 86 114, 66 152 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M98 102 C 92 84, 104 66, 126 62 C 114 76, 110 90, 114 104 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="4" stroke-linejoin="round"/><path d="M114 64 C 130 78, 152 92, 180 100" fill="none" stroke="var(--ink)" stroke-width="3" opacity=".45"/><path d="M150 62 C 180 64, 206 78, 222 100" fill="none" stroke="#fff" stroke-width="8" opacity=".24" stroke-linecap="round"/></symbol>
+    <symbol id="p-hair-shaggy" viewBox="0 0 300 380"><use href="#p-shade"/><path d="M60 170 C 50 112, 74 60, 108 52 L 114 26 L 128 56 L 148 22 L 158 56 L 184 28 L 182 60 C 220 68, 248 104, 242 166 C 234 128, 206 104, 150 106 C 100 106, 76 122, 60 170 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><g fill="var(--hair)" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"><path d="M60 168 L 46 204 L 64 196 L 58 222 L 74 180 Z"/><path d="M242 164 L 256 200 L 238 192 L 244 218 L 228 178 Z"/></g><path d="M96 78 C 102 96, 100 112, 96 120 M136 60 C 134 80, 132 96, 134 110 M190 66 C 196 84, 200 100, 198 112" fill="none" stroke="var(--ink)" stroke-width="3" opacity=".4" stroke-linecap="round"/></symbol>
+    <symbol id="p-hair-grey" viewBox="0 0 300 380"><g fill="var(--hair)" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"><path d="M60 150 C 54 176, 58 198, 70 206 L 80 148 Z"/><path d="M240 150 C 246 176, 242 198, 230 206 L 220 148 Z"/></g><path d="M74 150 C 74 104, 104 74, 150 74 C 196 74, 226 104, 226 150 C 220 124, 196 112, 150 112 C 104 112, 80 124, 74 150 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M106 94 C 126 84, 174 84, 194 94" fill="none" stroke="#fff" stroke-width="7" opacity=".35" stroke-linecap="round"/></symbol>
+
+    <!-- cabelos volumosos (pecas "tras" vao antes do pescoco; pecas "frente" depois das sobrancelhas) -->
+    <symbol id="p-afro-back" viewBox="0 0 300 380"><g fill="var(--hair)" stroke="var(--ink)" stroke-width="6"><circle cx="150" cy="128" r="112"/><circle cx="62" cy="86" r="28"/><circle cx="238" cy="86" r="28"/><circle cx="104" cy="28" r="26"/><circle cx="196" cy="28" r="26"/><circle cx="150" cy="18" r="24"/><circle cx="42" cy="150" r="26"/><circle cx="258" cy="150" r="26"/><circle cx="56" cy="212" r="24"/><circle cx="244" cy="212" r="24"/></g><circle cx="150" cy="128" r="110" fill="var(--hair)"/><g fill="none" stroke="var(--ink)" stroke-width="3" opacity=".28"><circle cx="86" cy="60" r="8"/><circle cx="150" cy="40" r="8"/><circle cx="214" cy="60" r="8"/><circle cx="60" cy="120" r="8"/><circle cx="240" cy="120" r="8"/><circle cx="118" cy="52" r="6"/><circle cx="182" cy="52" r="6"/></g><path d="M96 48 C 120 30, 180 30, 204 48" fill="none" stroke="#fff" stroke-width="9" opacity=".2" stroke-linecap="round"/></symbol>
+    <symbol id="p-afro-front" viewBox="0 0 300 380"><g fill="var(--hair)" stroke="var(--ink)" stroke-width="6"><circle cx="54" cy="176" r="34"/><circle cx="246" cy="176" r="34"/></g><path d="M66 150 C 70 108, 100 90, 150 90 C 200 90, 230 108, 234 150 C 220 126, 190 116, 150 116 C 110 116, 80 126, 66 150 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M70 152 C 86 128, 110 118, 150 118 C 190 118, 214 128, 230 150 C 214 136, 190 130, 150 130 C 110 130, 86 136, 70 152 Z" fill="var(--ink)" opacity=".12"/></symbol>
+    <symbol id="p-long-back" viewBox="0 0 300 380"><path d="M58 150 C 38 200, 34 280, 48 334 C 66 324, 86 336, 98 320 C 108 300, 100 240, 112 212 L 188 212 C 200 240, 192 300, 202 320 C 214 336, 234 324, 252 334 C 266 280, 262 200, 242 150 C 230 88, 190 48, 150 48 C 110 48, 70 88, 58 150 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M62 200 C 56 250, 58 300, 66 326 M238 200 C 244 250, 242 300, 234 326" fill="none" stroke="var(--ink)" stroke-width="3" opacity=".35" stroke-linecap="round"/></symbol>
+    <symbol id="p-long-front" viewBox="0 0 300 380"><use href="#p-shade"/><path d="M66 150 C 62 96, 96 56, 150 56 C 204 56, 238 96, 234 150 C 226 112, 196 100, 150 100 C 104 100, 74 112, 66 150 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><g fill="var(--hair)" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"><path d="M62 150 C 48 190, 50 240, 64 278 C 78 262, 82 220, 76 180 Z"/><path d="M238 150 C 252 190, 250 240, 236 278 C 222 262, 218 220, 224 180 Z"/></g><path d="M100 76 C 124 62, 176 62, 200 76" fill="none" stroke="#fff" stroke-width="8" opacity=".25" stroke-linecap="round"/><path d="M120 64 C 112 80, 104 96, 100 104 M184 64 C 190 80, 196 96, 200 104" fill="none" stroke="var(--ink)" stroke-width="3" opacity=".35" stroke-linecap="round"/></symbol>
+    <symbol id="p-hair-bun" viewBox="0 0 300 380"><use href="#p-sideburns"/><use href="#p-shade"/><circle cx="150" cy="40" r="28" fill="var(--hair)" stroke="var(--ink)" stroke-width="6"/><path d="M134 32 C 142 22, 158 22, 166 32" fill="none" stroke="var(--ink)" stroke-width="3" opacity=".4"/><path d="M66 152 C 66 94, 102 58, 150 58 C 198 58, 234 94, 234 152 C 220 118, 190 104, 150 104 C 110 104, 80 118, 66 152 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M128 62 C 140 60, 148 60, 150 60 M172 62 C 160 60, 152 60, 150 60 M96 78 C 112 66, 130 62, 150 62 M204 78 C 188 66, 170 62, 150 62" fill="none" stroke="var(--ink)" stroke-width="3" opacity=".4" stroke-linecap="round"/><path d="M110 74 C 124 66, 176 66, 190 74" fill="none" stroke="#fff" stroke-width="7" opacity=".22" stroke-linecap="round"/></symbol>
+    <symbol id="p-mullet-back" viewBox="0 0 300 380"><path d="M64 170 C 52 220, 54 282, 70 324 C 90 314, 110 324, 122 304 L 178 304 C 190 324, 210 314, 230 324 C 246 282, 248 220, 236 170 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M78 220 C 74 260, 76 290, 82 312 M222 220 C 226 260, 224 290, 218 312" fill="none" stroke="var(--ink)" stroke-width="3" opacity=".35" stroke-linecap="round"/></symbol>
+    <symbol id="p-mullet-front" viewBox="0 0 300 380"><use href="#p-sideburns"/><use href="#p-shade"/><path d="M66 152 C 64 100, 96 60, 150 60 C 204 60, 236 100, 234 152 C 222 118, 192 104, 150 104 C 108 104, 78 118, 66 152 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><g fill="var(--hair)" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"><path d="M108 66 L 116 42 L 132 62 Z"/><path d="M146 60 L 152 34 L 166 60 Z"/><path d="M182 66 L 196 46 L 202 70 Z"/></g><path d="M100 80 C 124 66, 176 66, 200 80" fill="none" stroke="#fff" stroke-width="7" opacity=".22" stroke-linecap="round"/></symbol>
+    <symbol id="p-hair-mohawk" viewBox="0 0 300 380"><path d="M66 152 C 66 94, 102 60, 150 60 C 198 60, 234 94, 234 152 C 220 118, 190 104, 150 104 C 110 104, 80 118, 66 152 Z" fill="var(--hair)" opacity=".25"/><path d="M66 152 C 66 94, 102 60, 150 60 C 198 60, 234 94, 234 152 C 220 118, 190 104, 150 104 C 110 104, 80 118, 66 152 Z" fill="url(#stubble)"/><path d="M118 104 L 110 58 L 130 72 L 134 24 L 150 62 L 164 14 L 170 64 L 188 30 L 186 72 L 204 58 L 190 104 Z" fill="var(--crest)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M136 40 L 148 62 M166 30 L 170 62" fill="none" stroke="#fff" stroke-width="5" opacity=".35" stroke-linecap="round"/></symbol>
+    <symbol id="p-dreads-back" viewBox="0 0 300 380"><g fill="var(--hair)" stroke="var(--ink)" stroke-width="5"><rect x="34" y="150" width="20" height="150" rx="10"/><rect x="52" y="130" width="20" height="186" rx="10"/><rect x="70" y="120" width="20" height="160" rx="10"/><rect x="210" y="120" width="20" height="160" rx="10"/><rect x="228" y="130" width="20" height="186" rx="10"/><rect x="246" y="150" width="20" height="150" rx="10"/></g><g fill="#ffd93d" stroke="var(--ink)" stroke-width="3"><circle cx="62" cy="310" r="7"/><circle cx="238" cy="310" r="7"/><circle cx="44" cy="294" r="6"/><circle cx="256" cy="294" r="6"/></g></symbol>
+    <symbol id="p-dreads-front" viewBox="0 0 300 380"><use href="#p-shade"/><path d="M62 156 C 58 90, 96 48, 150 48 C 204 48, 242 90, 238 156 C 226 116, 196 102, 150 102 C 104 102, 74 116, 62 156 Z" fill="var(--hair)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M80 120 C 92 80, 120 58, 150 54 M112 108 C 118 78, 134 60, 150 54 M188 108 C 182 78, 166 60, 150 54 M220 120 C 208 80, 180 58, 150 54" fill="none" stroke="var(--ink)" stroke-width="4" opacity=".5" stroke-linecap="round"/><g fill="var(--hair)" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"><path d="M60 150 C 48 190, 50 236, 62 262 C 74 246, 78 206, 74 176 Z"/><path d="M240 150 C 252 190, 250 236, 238 262 C 226 246, 222 206, 226 176 Z"/></g></symbol>
+    <symbol id="p-hair-bald" viewBox="0 0 300 380"><g fill="var(--hair)" stroke="var(--ink)" stroke-width="6"><circle cx="64" cy="140" r="24"/><circle cx="58" cy="180" r="22"/><circle cx="236" cy="140" r="24"/><circle cx="242" cy="180" r="22"/></g><path d="M136 72 q8 -18 18 -2 M160 70 q8 -16 16 -2" fill="none" stroke="var(--hair)" stroke-width="5" stroke-linecap="round"/><ellipse cx="128" cy="92" rx="22" ry="10" fill="#fff" opacity=".35" transform="rotate(-20 128 92)"/></symbol>
+
+    <!-- barbas volumosas -->
+    <symbol id="p-beard-viking" viewBox="0 0 300 380"><path d="M62 192 C 52 252, 70 332, 110 368 C 124 380, 140 374, 150 384 C 160 374, 176 380, 190 368 C 230 332, 248 252, 238 192 C 232 240, 206 272, 150 276 C 94 272, 68 240, 62 192 Z" fill="var(--beard)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M84 244 C 96 268, 112 282, 134 288" fill="none" stroke="#fff" stroke-width="6" opacity=".2" stroke-linecap="round"/><g fill="none" stroke="var(--ink)" stroke-width="3.5" opacity=".5" stroke-linecap="round"><path d="M118 296 c 10 10 -10 20 0 30 c 10 10 -10 20 0 30 M182 296 c -10 10 10 20 0 30 c -10 10 10 20 0 30"/><path d="M106 300 c 8 0 16 0 24 0 M106 330 c 8 0 16 0 24 0 M170 300 c 8 0 16 0 24 0 M170 330 c 8 0 16 0 24 0"/></g><g fill="#ffd93d" stroke="var(--ink)" stroke-width="3"><ellipse cx="118" cy="360" rx="11" ry="6"/><ellipse cx="182" cy="360" rx="11" ry="6"/></g></symbol>
+    <symbol id="p-beard-santa" viewBox="0 0 300 380"><path d="M60 190 a26 26 0 0 0 -4 50 a28 28 0 0 0 10 52 a28 28 0 0 0 28 42 a30 30 0 0 0 34 26 a28 28 0 0 0 44 0 a30 30 0 0 0 34 -26 a28 28 0 0 0 28 -42 a28 28 0 0 0 10 -52 a26 26 0 0 0 -4 -50 C 232 240, 206 272, 150 276 C 94 272, 68 240, 60 190 Z" fill="var(--beard)" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"/><path d="M84 244 C 96 268, 112 282, 134 288" fill="none" stroke="#fff" stroke-width="7" opacity=".5" stroke-linecap="round"/><path d="M104 300 q6 10 2 22 M130 312 q6 10 2 22 M170 312 q-6 10 -2 22 M196 300 q-6 10 -2 22" fill="none" stroke="var(--ink)" stroke-width="3" opacity=".3" stroke-linecap="round"/></symbol>
+    <symbol id="p-beard-bushy" viewBox="0 0 300 380"><g fill="var(--beard)" stroke="var(--ink)" stroke-width="6"><circle cx="70" cy="236" r="26"/><circle cx="230" cy="236" r="26"/><circle cx="86" cy="292" r="28"/><circle cx="214" cy="292" r="28"/><circle cx="122" cy="334" r="28"/><circle cx="178" cy="334" r="28"/><circle cx="150" cy="344" r="26"/></g><path d="M58 192 C 48 250, 64 318, 104 350 C 122 364, 140 356, 150 366 C 160 356, 178 364, 196 350 C 236 318, 252 250, 242 192 C 236 240, 206 272, 150 276 C 94 272, 64 240, 58 192 Z" fill="var(--beard)"/><path d="M84 244 C 96 268, 112 282, 134 288" fill="none" stroke="#fff" stroke-width="6" opacity=".2" stroke-linecap="round"/><path d="M100 300 q8 10 4 24 M130 312 q6 10 2 22 M170 312 q-6 10 -2 22 M200 300 q-8 10 -4 24" fill="none" stroke="var(--ink)" stroke-width="3" opacity=".35" stroke-linecap="round"/></symbol>
+    <symbol id="p-mutton" viewBox="0 0 300 380"><g fill="var(--beard)" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"><path d="M64 190 C 58 232, 70 266, 104 276 C 108 252, 98 220, 84 196 Z"/><path d="M236 190 C 242 232, 230 266, 196 276 C 192 252, 202 220, 216 196 Z"/></g></symbol>
+    <symbol id="p-mustache-guidao" viewBox="0 0 300 380"><path d="M96 222 C 100 212, 112 214, 118 226 C 130 214, 146 218, 150 232 C 154 218, 170 214, 182 226 C 188 214, 200 212, 204 222 C 207 232, 197 237, 192 231 C 186 243, 166 247, 150 240 C 134 247, 114 243, 108 231 C 103 237, 93 232, 96 222 Z" fill="var(--beard)" stroke="var(--ink)" stroke-width="5" stroke-linejoin="round"/></symbol>
+    <symbol id="p-brows-bushy" viewBox="0 0 300 380"><g fill="var(--hair)" stroke="var(--ink)" stroke-width="4" stroke-linejoin="round"><path d="M80 152 C 94 126, 124 124, 140 142 C 126 146, 104 150, 80 164 Z"/><path d="M220 152 C 206 126, 176 124, 160 142 C 174 146, 196 150, 220 164 Z"/></g></symbol>
+
+    <!-- acessorios -->
+    <symbol id="p-glasses" viewBox="0 0 300 380"><g fill="#fff" fill-opacity=".18" stroke="var(--ink)" stroke-width="6" stroke-linejoin="round"><rect x="86" y="154" width="52" height="42" rx="13"/><rect x="162" y="154" width="52" height="42" rx="13"/><path d="M138 172 h24 M86 170 L 64 164 M214 170 L 236 164" fill="none"/></g><path d="M96 164 l12 -6 M172 164 l12 -6" stroke="#fff" stroke-width="4" opacity=".7" stroke-linecap="round"/></symbol>
+    <symbol id="p-glasses-round" viewBox="0 0 300 380"><g fill="#fff" fill-opacity=".18" stroke="var(--ink)" stroke-width="6"><circle cx="112" cy="178" r="26"/><circle cx="188" cy="178" r="26"/><path d="M138 176 q12 -8 24 0 M86 174 L 64 166 M214 174 L 236 166" fill="none"/></g><path d="M98 166 l10 -8 M174 166 l10 -8" stroke="#fff" stroke-width="4" opacity=".7" stroke-linecap="round"/></symbol>
+    <symbol id="p-earring" viewBox="0 0 300 380"><circle cx="238" cy="210" r="5.5" fill="#ffd93d" stroke="var(--ink)" stroke-width="3"/></symbol>
+    <symbol id="p-shine" viewBox="0 0 300 380"><g fill="#fff" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"><path d="M246 70 l5 14 14 5 -14 5 -5 14 -5 -14 -14 -5 14 -5 Z"/><path d="M60 54 l3.5 9 9 3.5 -9 3.5 -3.5 9 -3.5 -9 -9 -3.5 9 -3.5 Z"/></g></symbol>
+
+    <!-- icones de ferramenta -->
+    <symbol id="i-sc" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></symbol>
+    <symbol id="i-cl" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="7" rx="1"/><rect x="8.5" y="10" width="7" height="12" rx="2"/><path d="M8 1v2M11 1v2M14 1v2M17 1v2"/></symbol>
+    <symbol id="i-rz" viewBox="0 0 24 24"><path d="M5 19 15 4h5L10 19Z"/><path d="M5 19l-2 3"/></symbol>
+    <symbol id="i-cb" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="5" rx="1"/><path d="M5 13v4M8 13v4M11 13v4M14 13v4M17 13v4M20 13v4"/></symbol>
+    <symbol id="i-pm" viewBox="0 0 24 24"><ellipse cx="12" cy="7" rx="8" ry="3"/><path d="M4 7v9c0 1.7 3.6 3 8 3s8-1.3 8-3V7"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11M12 10V4.5a1.5 1.5 0 0 1 3 0V11M15 10.5V6.5a1.5 1.5 0 0 1 3 0V13M18 11.5a1.5 1.5 0 0 1 3 0V15a7 7 0 0 1-7 7h-1.5a6 6 0 0 1-5-2.7L4.6 15a1.6 1.6 0 0 1 2.6-1.8L9 15.5V11"/></symbol>
+
+    <!-- personagens montados -->
+    <symbol id="c-tonhao" viewBox="0 0 300 380"><use href="#p-shirt-flannel"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-blush"/><use href="#p-beard-full"/><use href="#p-mouth-grin"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows"/><use href="#p-hair-exec"/></symbol>
+    <symbol id="c-ze" viewBox="0 0 300 380"><use href="#p-shirt"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-round"/><use href="#p-blush"/><use href="#p-beard-stubble"/><use href="#p-mouth-grin"/><use href="#p-nose"/><use href="#p-eyes-happy"/><use href="#p-brows-up"/><use href="#p-hair-curly"/><use href="#p-earring"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <h1>Barber Battle: personagens</h1>
+  <p class="lead">Nova proposta de clientes no estilo Pop Cartoon, para substituir o esboço da página de layouts. Cada rosto é montado por peças (formato do rosto, cabelo, barba, olhos, boca, acessórios) com cores por variável. É o mesmo esquema que o jogo vai usar no canvas, então o que está aqui já é o teto de qualidade do protótipo, não só uma ilustração.</p>
+  <ul class="mudou">
+    <li>Proporções de cartoon: cabeça grande, queixo definido, orelhas e pescoço com sombra.</li>
+    <li>Olhos com branco, íris colorida, pupila e brilho; sobrancelhas grossas que mudam com a emoção.</li>
+    <li>Contorno grosso e sombra chapada em um tom só, para ler bem em thumb de 60 px.</li>
+    <li>Cabelo com volume, mechas e faixa de brilho; barba com textura e reflexo.</li>
+    <li>Três formatos de rosto, seis tons de pele, acessórios (óculos, brinco, sardas, rugas).</li>
+    <li>O corte é visível: cada tema tem um "antes" bagunçado e um "depois" com brilho.</li>
+  </ul>
+
+  <section>
+    <h2>Elenco de clientes</h2>
+    <p>Seis clientes que entram na cadeira em rodízio. Cada um tem um "antes" próprio e aceita todos os temas; o que muda é a forma do rosto, o cabelo e a barba.</p>
+    <div class="elenco">
+      <div class="card">
+        <div class="fig"><svg viewBox="0 0 300 380" style="--skin:#e8b48a;--hair:#4a2a14;--beard:#4a2a14;--iris:#3b7a3a;--ink:#2a1a52;--shirt:#d9442b"><use href="#c-tonhao"/></svg></div>
+        <b>Tonhão</b><small>Rosto quadrado, barba cheia, camisa xadrez. O cliente-símbolo do jogo e da thumb.</small>
+      </div>
+      <div class="card">
+        <div class="fig" style="--fundo:#1dc9c0"><svg viewBox="0 0 300 380" style="--skin:#a0623a;--hair:#1d1410;--beard:#1d1410;--iris:#3a2214;--ink:#2a1a52;--shirt:#ffd93d"><use href="#c-ze"/></svg></div>
+        <b>Zé</b><small>Rosto redondo, cabelo crespo, barba por fazer, brinco. Sempre rindo.</small>
+      </div>
+      <div class="card">
+        <div class="fig" style="--fundo:#ff7a1a"><svg viewBox="0 0 300 380" style="--skin:#5c3a22;--hair:#0f0a08;--beard:#0f0a08;--iris:#1a100a;--ink:#2a1a52;--shirt:#2a66d9"><use href="#p-shirt"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-oval"/><use href="#p-beard-goatee"/><use href="#p-mouth-smile"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows"/><use href="#p-hair-exec"/><use href="#p-glasses"/></svg></div>
+        <b>Bruno</b><small>Rosto oval, cavanhaque, óculos. O executivo que quer tudo alinhado.</small>
+      </div>
+      <div class="card">
+        <div class="fig" style="--fundo:#ff5fa2"><svg viewBox="0 0 300 380" style="--skin:#f1c7a0;--hair:#e86a10;--beard:#e86a10;--iris:#2f7fd1;--ink:#2a1a52;--shirt:#6b4bd6"><use href="#p-shirt"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-oval"/><use href="#p-blush"/><use href="#p-freckles"/><use href="#p-mouth-grin"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows-up"/><use href="#p-hair-pomp"/><use href="#p-earring"/></svg></div>
+        <b>Kaique</b><small>Ruivo, sardas, topete alto. O cliente do Visual de Festa.</small>
+      </div>
+      <div class="card">
+        <div class="fig" style="--fundo:#ffd93d"><svg viewBox="0 0 300 380" style="--skin:#d9a37b;--hair:#d7dbe0;--beard:#c3c8d0;--iris:#5a4a3a;--ink:#2a1a52;--shirt:#1dc9c0"><use href="#p-shirt"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-round"/><use href="#p-blush"/><use href="#p-beard-full"/><use href="#p-mouth-smile"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows"/><use href="#p-wrinkles"/><use href="#p-hair-grey"/><use href="#p-glasses-round"/></svg></div>
+        <b>Seu Chico</b><small>Grisalho, óculos redondos, rugas de riso. O cliente de todo domingo.</small>
+      </div>
+      <div class="card">
+        <div class="fig" style="--fundo:#2a66d9"><svg viewBox="0 0 300 380" style="--skin:#c98f6a;--hair:#2b1b10;--beard:#2b1b10;--iris:#4a2a1a;--ink:#2a1a52;--shirt:#ff5fa2"><use href="#p-shirt"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-blush"/><use href="#p-beard-stubble"/><use href="#p-mouth-o"/><use href="#p-nose"/><use href="#p-eyes-wide"/><use href="#p-brows-up"/><use href="#p-hair-buzz"/></svg></div>
+        <b>Léo</b><small>Rosto quadrado, máquina 1, barba rala. Sempre surpreso com o resultado.</small>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Elenco com volume</h2>
+    <p>Sete clientes com cabelo e barba grandes: mais área para cortar, mais "antes e depois" e silhuetas que se reconhecem de longe. As peças de trás (afro, cabelão, mullet, dreads) ficam atrás do rosto; as da frente cobrem a testa e as orelhas.</p>
+    <div class="elenco">
+      <div class="card">
+        <div class="fig" style="--fundo:#1dc9c0"><svg viewBox="0 0 300 380" overflow="visible" style="--skin:#f1c7a0;--hair:#b5651d;--beard:#b5651d;--iris:#2f7fd1;--ink:#2a1a52;--shirt:#6b4bd6"><use href="#p-shirt"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-beard-viking"/><use href="#p-mouth-grin"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows-bushy"/><use href="#p-hair-bun"/></svg></div>
+        <b>Valdir</b><small>Coque, barbão trançado até o peito. O tema Lenhador é dele.</small>
+      </div>
+      <div class="card">
+        <div class="fig" style="--fundo:#ff7a1a"><svg viewBox="0 0 300 380" overflow="visible" style="--skin:#6b4226;--hair:#1d1410;--beard:#1d1410;--iris:#2a1a0e;--ink:#2a1a52;--shirt:#ffd93d"><use href="#p-shirt"/><use href="#p-afro-back"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-round"/><use href="#p-blush"/><use href="#p-beard-goatee"/><use href="#p-mouth-grin"/><use href="#p-mustache-guidao"/><use href="#p-nose"/><use href="#p-eyes-happy"/><use href="#p-brows-up"/><use href="#p-afro-front"/></svg></div>
+        <b>Jurandir</b><small>Black power gigante e bigode de guidão. Quer só aparar, sem perder o volume.</small>
+      </div>
+      <div class="card">
+        <div class="fig" style="--fundo:#ff5fa2"><svg viewBox="0 0 300 380" overflow="visible" style="--skin:#d9a37b;--hair:#e7c27a;--beard:#c9a157;--iris:#3b7a3a;--ink:#2a1a52;--shirt:#2a66d9"><use href="#p-shirt"/><use href="#p-long-back"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-oval"/><use href="#p-beard-stubble"/><use href="#p-mouth-smile"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows"/><use href="#p-long-front"/></svg></div>
+        <b>Caio</b><small>Cabelão de surfista até o ombro e barba por fazer.</small>
+      </div>
+      <div class="card">
+        <div class="fig" style="--fundo:#2a66d9"><svg viewBox="0 0 300 380" overflow="visible" style="--skin:#e8b48a;--hair:#e9ecef;--beard:#f1f3f5;--iris:#5a4a3a;--ink:#2a1a52;--shirt:#d9442b"><use href="#p-shirt"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-round"/><use href="#p-blush"/><use href="#p-beard-santa"/><use href="#p-mouth-smile"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes-happy"/><use href="#p-brows-bushy"/><use href="#p-wrinkles"/><use href="#p-hair-bald"/><use href="#p-glasses-round"/></svg></div>
+        <b>Seu Osvaldo</b><small>Careca com tufos e barba branca de nuvem. O mais fofo da fila.</small>
+      </div>
+      <div class="card">
+        <div class="fig" style="--fundo:#ffd93d"><svg viewBox="0 0 300 380" overflow="visible" style="--skin:#c98f6a;--hair:#2b1b10;--beard:#2b1b10;--iris:#4a2a1a;--ink:#2a1a52;--shirt:#1dc9c0"><use href="#p-shirt"/><use href="#p-mullet-back"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-mutton"/><use href="#p-mouth-grin"/><use href="#p-mustache-guidao"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows"/><use href="#p-mullet-front"/></svg></div>
+        <b>Dudu</b><small>Mullet espetado na frente e comprido atrás, costeletas e bigode de guidão.</small>
+      </div>
+      <div class="card">
+        <div class="fig" style="--fundo:#6b4bd6"><svg viewBox="0 0 300 380" overflow="visible" style="--skin:#5c3a22;--hair:#0f0a08;--beard:#0f0a08;--iris:#1a100a;--ink:#2a1a52;--shirt:#ff7a1a"><use href="#p-shirt"/><use href="#p-dreads-back"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-oval"/><use href="#p-beard-bushy"/><use href="#p-mouth-o"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes-wide"/><use href="#p-brows-up"/><use href="#p-dreads-front"/></svg></div>
+        <b>Ravi</b><small>Dreads com contas douradas e barba cheia de cachos.</small>
+      </div>
+      <div class="card">
+        <div class="fig" style="--fundo:#ff7a1a"><svg viewBox="0 0 300 380" overflow="visible" style="--skin:#e8b48a;--hair:#2b1b10;--beard:#2b1b10;--crest:#1dc9c0;--iris:#2f7fd1;--ink:#2a1a52;--shirt:#ff5fa2"><use href="#p-shirt"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-beard-stubble"/><use href="#p-mutton"/><use href="#p-mouth-grin"/><use href="#p-nose"/><use href="#p-eyes-wide"/><use href="#p-brows-up"/><use href="#p-hair-mohawk"/><use href="#p-earring"/></svg></div>
+        <b>Mateus</b><small>Moicano azul e costeletas. Tema Militar vai ser um drama.</small>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Transformação por tema</h2>
+    <p>O cliente entra bagunçado e sai com o visual do tema. As barras de cabelo e barba movem exatamente estas peças: o "antes" é o cabelo desgrenhado e a barba desigual; cada passada da ferramenta certa troca a peça por uma versão mais arrumada, e a pomada acrescenta o brilho.</p>
+    <div class="etapas">
+      <div class="strip">
+        <div class="card"><div class="fig"><svg viewBox="0 0 300 380" style="--skin:#e8b48a;--hair:#4a2a14;--beard:#4a2a14;--iris:#3b7a3a;--ink:#2a1a52"><use href="#p-shirt-flannel"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-beard-scraggly"/><use href="#p-mouth-worried"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows-worried"/><use href="#p-hair-shaggy"/></svg></div><b>Antes</b><small>Tonhão chega assim</small></div>
+        <div class="card"><div class="fig"><svg viewBox="0 0 300 380" style="--skin:#e8b48a;--hair:#4a2a14;--beard:#4a2a14;--iris:#3b7a3a;--ink:#2a1a52"><use href="#p-shirt-flannel"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-beard-full"/><use href="#p-mouth-smile"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows"/><use href="#p-hair-shaggy"/></svg></div><b>Durante</b><small>Barba já no contorno, cabelo ainda não</small></div>
+        <div class="card"><div class="fig"><svg viewBox="0 0 300 380" style="--skin:#e8b48a;--hair:#4a2a14;--beard:#4a2a14;--iris:#3b7a3a;--ink:#2a1a52"><use href="#p-shirt-flannel"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-blush"/><use href="#p-beard-full"/><use href="#p-mouth-grin"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes-happy"/><use href="#p-brows-up"/><use href="#p-hair-exec"/><use href="#p-shine"/></svg></div><b>Depois: Barba de Lenhador</b><small>Barba cheia e desenhada, cabelo curto com brilho</small></div>
+      </div>
+      <div class="strip">
+        <div class="card"><div class="fig" style="--fundo:#ff5fa2"><svg viewBox="0 0 300 380" style="--skin:#f1c7a0;--hair:#e86a10;--beard:#e86a10;--iris:#2f7fd1;--ink:#2a1a52;--shirt:#6b4bd6"><use href="#p-shirt"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-oval"/><use href="#p-freckles"/><use href="#p-beard-stubble"/><use href="#p-mouth-worried"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows-worried"/><use href="#p-hair-shaggy"/></svg></div><b>Antes</b><small>Kaique, cabelo caído e barba rala</small></div>
+        <div class="card"><div class="fig" style="--fundo:#ff5fa2"><svg viewBox="0 0 300 380" style="--skin:#f1c7a0;--hair:#e86a10;--beard:#e86a10;--iris:#2f7fd1;--ink:#2a1a52;--shirt:#6b4bd6"><use href="#p-shirt"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-oval"/><use href="#p-blush"/><use href="#p-freckles"/><use href="#p-mouth-grin"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows-up"/><use href="#p-hair-pomp"/><use href="#p-earring"/><use href="#p-shine"/></svg></div><b>Depois: Visual de Festa</b><small>Topete com brilho, rosto liso</small></div>
+        <div class="card"><div class="fig" style="--fundo:#2a66d9"><svg viewBox="0 0 300 380" style="--skin:#c98f6a;--hair:#2b1b10;--beard:#2b1b10;--iris:#4a2a1a;--ink:#2a1a52;--shirt:#ff5fa2"><use href="#p-shirt"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-mouth-smile"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows"/><use href="#p-hair-buzz"/><use href="#p-shine"/></svg></div><b>Depois: Militar</b><small>Léo, máquina rente e rosto liso</small></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Zonas de corte</h2>
+    <p>A mecânica escolhida é arrastar a ferramenta sobre a cabeça. Estas são as seis zonas que recebem o traço; cada tema diz qual ferramenta cada zona espera.</p>
+    <div class="zonas">
+      <div class="fig"><svg viewBox="0 0 300 380" style="--skin:#e8b48a;--hair:#4a2a14;--beard:#4a2a14;--iris:#3b7a3a;--ink:#2a1a52"><use href="#p-shirt-flannel"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-beard-full"/><use href="#p-mouth-smile"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows"/><use href="#p-hair-exec"/>
+        <g stroke="#fff" stroke-width="3" stroke-dasharray="6 5" fill-opacity=".42">
+          <path d="M96 100 C 110 60, 190 60, 204 100 C 185 92, 115 92, 96 100 Z" fill="#ffd93d"/>
+          <path d="M66 150 C 64 110, 80 96, 96 100 C 80 118, 72 134, 70 156 Z M234 150 C 236 110, 220 96, 204 100 C 220 118, 228 134, 230 156 Z" fill="#1dc9c0"/>
+          <path d="M96 100 C 115 92, 185 92, 204 100 C 190 108, 160 110, 150 110 C 140 110, 110 108, 96 100 Z" fill="#ff7a1a"/>
+          <path d="M66 198 C 64 232, 80 262, 118 270 C 108 246, 96 222, 84 206 Z M234 198 C 236 232, 220 262, 182 270 C 192 246, 204 222, 216 206 Z" fill="#ff5fa2"/>
+          <path d="M118 272 C 126 300, 174 300, 182 272 C 170 282, 130 282, 118 272 Z" fill="#2f7fd1"/>
+          <path d="M110 230 C 124 218, 176 218, 190 230 C 178 240, 122 240, 110 230 Z" fill="#8a6cf0"/>
+        </g>
+        <g font-family="Lilita One, sans-serif" font-size="13" fill="#fff" stroke="#2a1a52" stroke-width="3" paint-order="stroke" text-anchor="middle"><text x="150" y="60">TOPO</text><text x="40" y="128">LADOS</text><text x="260" y="128">LADOS</text><text x="150" y="94">FRANJA</text><text x="40" y="250">BOCHECHA</text><text x="262" y="250">BOCHECHA</text><text x="150" y="330">QUEIXO</text><text x="150" y="212">BIGODE</text></g>
+      </svg></div>
+      <div class="tbl"><table>
+        <thead><tr><th>Zona</th><th>Ferramenta certa</th><th>Lenhador</th><th>Executivo</th><th>Festa</th><th>Militar</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag" style="--c:#c9a200">Topo</span></td><td>Tesoura, depois Pente</td><td>curto</td><td>médio alinhado</td><td>topete alto</td><td>rente</td></tr>
+          <tr><td><span class="tag" style="--c:#139e97">Lados</span></td><td>Máquina</td><td>degradê</td><td>curto</td><td>degradê</td><td>rente</td></tr>
+          <tr><td><span class="tag" style="--c:#e0640c">Franja</span></td><td>Tesoura, Pomada no fim</td><td>para trás</td><td>risca lateral</td><td>para cima com brilho</td><td>nenhuma</td></tr>
+          <tr><td><span class="tag" style="--c:#e8468a">Bochechas</span></td><td>Navalha no contorno</td><td>cheia e desenhada</td><td>lisa</td><td>lisa</td><td>lisa</td></tr>
+          <tr><td><span class="tag" style="--c:#2f7fd1">Queixo</span></td><td>Navalha ou Pente</td><td>cheio, penteado</td><td>cavanhaque opcional</td><td>liso</td><td>liso</td></tr>
+          <tr><td><span class="tag" style="--c:#7a5be0">Bigode</span></td><td>Navalha</td><td>cheio</td><td>fino</td><td>nenhum</td><td>nenhum</td></tr>
+        </tbody>
+      </table>
+      <p class="cap">Ferramenta errada na zona (por exemplo, máquina na barba no tema Lenhador) não tira ponto nas primeiras rodadas: o cliente faz cara de susto, a zona treme e nada muda. Depois da terceira rodada da sessão passa a reduzir um pouco a qualidade, para a disputa ter risco.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Expressões do cliente</h2>
+    <p>O rosto é o feedback principal: a plateia e o barbeiro leem a emoção do cliente sem texto. Três estados bastam para o protótipo, mais o piscar automático.</p>
+    <div class="strip">
+      <div class="card"><div class="fig"><svg viewBox="0 0 300 380" style="--skin:#e8b48a;--hair:#4a2a14;--beard:#4a2a14;--iris:#3b7a3a;--ink:#2a1a52"><use href="#p-shirt-flannel"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-blush"/><use href="#p-beard-full"/><use href="#p-mouth-grin"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes-happy"/><use href="#p-brows-up"/><use href="#p-hair-exec"/></svg></div><b>Feliz</b><small>Ferramenta certa na zona certa; final de rodada com boa nota</small></div>
+      <div class="card"><div class="fig"><svg viewBox="0 0 300 380" style="--skin:#e8b48a;--hair:#4a2a14;--beard:#4a2a14;--iris:#3b7a3a;--ink:#2a1a52"><use href="#p-shirt-flannel"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-beard-full"/><use href="#p-mouth-o"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes-wide"/><use href="#p-brows-up"/><use href="#p-hair-exec"/></svg></div><b>Impressionado</b><small>Pomada aplicada; combo de três traços seguidos</small></div>
+      <div class="card"><div class="fig"><svg viewBox="0 0 300 380" style="--skin:#e8b48a;--hair:#4a2a14;--beard:#4a2a14;--iris:#3b7a3a;--ink:#2a1a52"><use href="#p-shirt-flannel"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-beard-full"/><use href="#p-mouth-worried"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows-worried"/><use href="#p-hair-exec"/></svg></div><b>Preocupado</b><small>Ferramenta errada; últimos 10 segundos da rodada</small></div>
+    </div>
+  </section>
+
+  <section class="m7">
+    <h2>Na tela: estrutura Palco com a arte Pop Cartoon</h2>
+    <p>Os dois pódios sempre visíveis (estrutura do modelo 03) com a cadeira, os botões e os personagens do Pop Cartoon. Você corta o Valdir no pódio da esquerda; o Jurandir é o cliente do adversário. A plateia tem os botões de torcida de cada lado e o medidor no meio.</p>
+    <div class="screen" role="img" aria-label="Tela de rodada no layout Palco com arte Pop Cartoon">
+      <div class="top">
+        <div class="ribbon l">Rodada 3</div>
+        <div class="marquee">2:14</div>
+        <div class="ribbon r">Barba de Lenhador</div>
+      </div>
+      <div class="pod a">
+        <div class="nm">VOCÊ <span>na cadeira</span></div>
+        <div class="hd">
+          <div class="port"><svg viewBox="0 0 300 380" style="--skin:#f1c7a0;--hair:#b5651d;--beard:#b5651d;--iris:#2f7fd1;--ink:#2a1a52;--shirt:#6b4bd6"><use href="#p-shirt"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-beard-viking"/><use href="#p-mouth-grin"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows-bushy"/><use href="#p-hair-shaggy"/></svg></div>
+          <div class="bars">
+            <div class="bar"><span class="lbl">Cabelo</span><span class="trk"><i style="--v:62%"></i></span><span class="val"></span></div>
+            <div class="bar"><span class="lbl">Barba</span><span class="trk"><i style="--v:38%"></i></span><span class="val"></span></div>
+            <div class="combo">No ritmo ×4</div>
+          </div>
+        </div>
+        <div class="tools">
+          <div class="tool"><svg><use href="#i-sc"/></svg>Tesoura</div>
+          <div class="tool on"><svg><use href="#i-cl"/></svg>Máquina</div>
+          <div class="tool"><svg><use href="#i-rz"/></svg>Navalha</div>
+          <div class="tool"><svg><use href="#i-cb"/></svg>Pente</div>
+          <div class="tool"><svg><use href="#i-pm"/></svg>Pomada</div>
+        </div>
+      </div>
+      <div class="pod b">
+        <div class="nm">ZÉ_CORTES <span class="b">adversário</span></div>
+        <div class="hd">
+          <div class="port"><svg viewBox="0 0 300 380" style="--skin:#6b4226;--hair:#1d1410;--beard:#1d1410;--iris:#2a1a0e;--ink:#2a1a52;--shirt:#ffd93d"><use href="#p-shirt"/><use href="#p-afro-back"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-round"/><use href="#p-beard-goatee"/><use href="#p-mouth-o"/><use href="#p-mustache-guidao"/><use href="#p-nose"/><use href="#p-eyes-wide"/><use href="#p-brows-up"/><use href="#p-afro-front"/></svg></div>
+          <div class="bars">
+            <div class="bar"><span class="lbl">Cabelo</span><span class="trk"><i style="--v:45%"></i></span><span class="val"></span></div>
+            <div class="bar"><span class="lbl">Barba</span><span class="trk"><i style="--v:70%"></i></span><span class="val"></span></div>
+          </div>
+        </div>
+        <div class="status">Usando a navalha agora</div>
+      </div>
+      <div class="aud">
+        <div class="seats"><span class="av" style="--c:#ff7a1a">JL</span><span class="av" style="--c:#ffd93d;color:#2a1a52">MA</span><span class="av" style="--c:#1dc9c0;color:#2a1a52">TH</span><span class="av" style="--c:#ff5fa2">BE</span></div>
+        <div class="hype"><span class="vai">Vai!</span><div class="trk"><i></i><i></i></div><span class="vai t">Vai!</span></div>
+        <div class="cnt">7 assistindo<br>5 na fila</div>
+      </div>
+    </div>
+    <p class="cap">Em retrato os pódios empilham: o seu em cima, maior, e o do adversário embaixo, reduzido; a plateia vira só o medidor de torcida com os dois botões.</p>
+  </section>
+
+  <section class="m5">
+    <h2>Visão de corte ampliada (quando o barbeiro dá dois toques no próprio pódio)</h2>
+    <p>Versão com um cliente só, usada como zoom para cortes de precisão: o Tonhão na cadeira, a mão do barbeiro passando a máquina nos lados e os fiapos de cabelo caindo. O Zé é o adversário no cartão do canto.</p>
+    <div class="screen" role="img" aria-label="Tela de rodada Pop Cartoon com os personagens novos">
+      <div class="scene">
+        <div class="chair"></div>
+        <div class="port"><svg viewBox="0 0 300 380" style="--skin:#e8b48a;--hair:#4a2a14;--beard:#4a2a14;--iris:#3b7a3a;--ink:#2a1a52"><use href="#p-shirt-flannel"/><use href="#p-neck"/><use href="#p-ears"/><use href="#p-face-square"/><use href="#p-blush"/><use href="#p-beard-full"/><use href="#p-mouth-grin"/><use href="#p-mustache"/><use href="#p-nose"/><use href="#p-eyes"/><use href="#p-brows-up"/><use href="#p-hair-shaggy"/></svg></div>
+      </div>
+      <div class="hand"><svg viewBox="0 0 24 24"><use href="#i-cl"/></svg></div>
+      <div class="chips"><i style="left:0;top:10%;--r:20deg"></i><i style="left:30%;top:40%;--r:-30deg"></i><i style="left:60%;top:0;--r:60deg"></i><i style="left:80%;top:55%;--r:-10deg"></i><i style="left:45%;top:80%;--r:35deg"></i></div>
+      <div class="clock">2:14</div>
+      <div class="tag2">Barba de Lenhador</div>
+      <div class="bubble">Capricha aí!</div>
+      <div class="opp">
+        <div class="port"><svg viewBox="0 0 300 380" style="--skin:#a0623a;--hair:#1d1410;--beard:#1d1410;--iris:#3a2214;--ink:#2a1a52;--shirt:#ffd93d"><use href="#c-ze"/></svg></div>
+        <div><b>Zé</b>
+          <div class="bar"><span class="lbl"></span><span class="trk"><i style="--v:45%"></i></span><span class="val"></span></div>
+          <div class="bar"><span class="lbl"></span><span class="trk"><i style="--v:70%"></i></span><span class="val"></span></div>
+        </div>
+      </div>
+      <div class="prog">
+        <div class="bar"><span class="lbl">Cabelo</span><span class="trk"><i style="--v:62%"></i></span><span class="val">62%</span></div>
+        <div class="bar"><span class="lbl">Barba</span><span class="trk"><i style="--v:38%"></i></span><span class="val">38%</span></div>
+      </div>
+      <div class="arc">
+        <div class="tool t1"><svg><use href="#i-sc"/></svg>Tesoura</div>
+        <div class="tool t2 on"><svg><use href="#i-cl"/></svg>Máquina</div>
+        <div class="tool t3"><svg><use href="#i-rz"/></svg>Navalha</div>
+        <div class="tool t4"><svg><use href="#i-cb"/></svg>Pente</div>
+        <div class="tool t5"><svg><use href="#i-pm"/></svg>Pomada</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Mecânicas e física</h2>
+    <p>O que deixa a rodada divertida além de "passar a ferramenta". As de servidor mudam o resultado e valem para os dois barbeiros; as de cliente são só visuais, mas respondem no mesmo quadro do toque.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Mecânica</th><th>O que faz</th><th>Onde</th><th>Quando</th></tr></thead>
+      <tbody>
+        <tr><td>Aparas com física</td><td>Fiapos com gravidade, giro e quique na capa; viram um montinho no chão que aparece na votação</td><td>cliente</td><td>MVP</td></tr>
+        <tr><td>Cabeça com mola</td><td>Gira e amassa no traço; a máquina faz tremor fino, o pente faz um aceno; dois quiques no fim</td><td>cliente</td><td>MVP</td></tr>
+        <tr><td>Combo "No ritmo"</td><td>Traços certos a menos de 1,2 s acumulam; em 5 vira "Em chamas": ×1,3 de progresso, faíscas, música sobe meio tom; errar zera</td><td>servidor</td><td>MVP</td></tr>
+        <tr><td>Navalha de precisão</td><td>Guia pontilhada no contorno da barba; traço preciso dá "Perfeito!", traço torto dá um curativo cômico na bochecha</td><td>servidor</td><td>MVP</td></tr>
+        <tr><td>Torcida da plateia</td><td>Espectador toca "Vai!" no lado de um barbeiro; medidor cheio dá 5 s de Turbo (×1,5, mãos em borrão, plateia pula)</td><td>servidor</td><td>MVP</td></tr>
+        <tr><td>Eventos de caos</td><td>Mosca (3 toques para espantar, senão o cliente sacode), Espirro (aparas voam), Telefone (cliente vira; só um lado aceita traço); iguais para os dois</td><td>servidor</td><td>MVP / v2</td></tr>
+        <tr><td>Pomada deslizante</td><td>Com o cabelo pronto, arrastar a pomada para cima ergue o topete com mola; para o lado faz a risca</td><td>cliente + servidor</td><td>MVP</td></tr>
+        <tr><td>Clientes com personalidade</td><td>Zé ri com cócegas do pente no pescoço; Seu Chico cochila se o barbeiro para por 8 s (toque acorda); Léo pula no primeiro zumbido</td><td>servidor + cliente</td><td>MVP / v2</td></tr>
+        <tr><td>Câmera lenta final</td><td>Últimos 5 s em câmera lenta com batida de coração; zoom ao completar uma zona</td><td>cliente</td><td>MVP</td></tr>
+        <tr><td>Coroa e confete</td><td>No resultado a coroa cai e quica na cabeça do vencedor; confete com física; chapéus desbloqueados em 1, 3 e 5 vitórias</td><td>cliente</td><td>MVP</td></tr>
+        <tr><td>Momento espelho</td><td>Nos 10 s finais o cliente ergue o espelho; "Pronto!" termina antes com bônus se a qualidade for alta</td><td>servidor</td><td>v2</td></tr>
+        <tr><td>Talco</td><td>Nuvem de talco de 2 s na visão do adversário, ganha por sequência de vitórias</td><td>servidor</td><td>playtest decide</td></tr>
+      </tbody>
+    </table></div>
+    <p class="cap">Nada disso pune nos 3 primeiros minutos: o novato vê só o visual. A qualidade numérica nunca aparece; a plateia vota pelo que vê.</p>
+  </section>
+
+  <section>
+    <h2>Como isso vira jogo</h2>
+    <p>No protótipo as mesmas peças são desenhadas no canvas 2D com <code>Path2D</code> (contorno grosso, preenchimento e sombra chapada), sem imagem nenhuma: o elenco inteiro custa menos de 40 KB. O progresso de cada zona escolhe a peça (desgrenhado → aparado → tema) e interpola a transição com um "pulo" de 120 ms. Piscar a cada 3 a 5 s, boca que acompanha a emoção, cabeça que balança no traço e fiapos que caem com a física simples dão a vida que o estilo pede.</p>
+  </section>
+</div>

@@ -1,0 +1,140 @@
+/* HUD em DOM no estilo Pop Cartoon: contorno grosso, sombra chapada, botoes de apertar. O jogo e o canvas. */
+@font-face { font-family: 'Fredoka'; src: url('fontes/fredoka-latin-700-normal.woff2') format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Fredoka'; src: url('fontes/fredoka-latin-600-normal.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+
+:root {
+  --tinta: #2a1a52; --painel: #fff6e3; --painel2: #ffe3a3; --roxo: #6b4bd6; --laranja: #ff7a1a; --teal: #1dc9c0;
+  --amarelo: #ffd93d; --rosa: #ff5fa2; --azul: #2a66d9; --branco: #fff; --sombra: rgba(42, 26, 82, 0.45); --trilho: #3f2a8a;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body {
+  margin: 0; height: 100%; overflow: hidden; background: var(--roxo); color: var(--tinta);
+  font-family: 'Fredoka', system-ui, -apple-system, 'Segoe UI', sans-serif; font-weight: 700;
+  user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: none; overscroll-behavior: none;
+}
+#cena { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+#hud { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+#hud > * { position: absolute; }
+#hud button { pointer-events: auto; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+body.sem-anuncio .anuncio { display: none !important; }
+body.semhud #hud, body.semhud #saguao, body.semhud #votacao { display: none !important; }
+
+/* letreiro */
+#topo { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; }
+.faixa:empty, .faixa:has(> span:empty) { visibility: hidden; }
+.faixa { justify-self: end; max-width: 100%; min-width: 0; color: #fff; font-size: clamp(13px, 2.4vmin, 20px); padding: 4px 14px; border: 3px solid var(--tinta); border-radius: 999px; box-shadow: 3px 3px 0 var(--tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transform: rotate(-2deg); }
+.faixa.rosa { background: var(--rosa); }
+.faixa.laranja { background: var(--laranja); justify-self: start; transform: rotate(2deg); }
+.letreiro { position: relative; background: var(--amarelo); color: var(--tinta); border: 4px solid var(--tinta); border-radius: 14px; padding: 2px 22px; box-shadow: 4px 4px 0 var(--tinta); font-variant-numeric: tabular-nums; }
+.letreiro::before { content: ''; position: absolute; inset: 4px; border: 3px dotted #fff; border-radius: 8px; pointer-events: none; }
+.letreiro b { font-size: clamp(24px, 5vmin, 40px); line-height: 1.1; }
+.letreiro.urgente { background: var(--rosa); color: #fff; animation: pulsar 0.5s ease-in-out infinite; }
+
+/* podios: a moldura e desenhada no canvas; aqui so texto e botoes */
+.podio .nome { position: absolute; display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: clamp(15px, 2.8vmin, 24px); letter-spacing: 0.02em; color: var(--tinta); overflow: hidden; }
+.podio .quem { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.selo { flex: none; font-size: clamp(10px, 1.6vmin, 13px); padding: 1px 9px; border-radius: 999px; border: 2px solid var(--tinta); background: var(--amarelo); }
+.selo.teal { background: var(--teal); }
+.selo:empty { display: none; }
+.barras { position: absolute; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+.barra { display: flex; flex-direction: column; gap: 3px; font-size: clamp(11px, 1.8vmin, 14px); }
+.barra .trilho { height: clamp(10px, 1.9vmin, 16px); border: 3px solid var(--tinta); border-radius: 999px; background: #e5d2a8; overflow: hidden; }
+.barra .trilho i { display: block; height: 100%; width: 0; background: var(--laranja); border-radius: inherit; transition: width 0.25s ease-out; }
+.barra.teal .trilho i { background: var(--teal); }
+.combo { align-self: flex-start; font-size: clamp(11px, 1.8vmin, 14px); color: #fff; background: var(--rosa); padding: 1px 10px; border: 2px solid var(--tinta); border-radius: 999px; transform: rotate(-3deg); }
+.ferramentas { position: absolute; display: flex; gap: 6px; justify-content: center; align-items: center; }
+.ferramenta { flex: none; display: grid; place-items: center; gap: 1px; background: #fff; color: var(--tinta); border: 3px solid var(--tinta); border-radius: 12px; box-shadow: 0 5px 0 var(--tinta); font-size: clamp(9px, 1.5vmin, 12px); line-height: 1; padding: 0; }
+.ferramenta svg { width: 55%; height: 55%; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ferramenta[aria-pressed="true"] { background: var(--amarelo); transform: translateY(3px); box-shadow: 0 2px 0 var(--tinta); }
+.ferramenta.pulsar { animation: pulsar 0.9s ease-in-out infinite; }
+.ferramenta:disabled { opacity: 0.5; cursor: default; }
+.status { position: absolute; display: grid; place-items: center; background: var(--painel2); border: 3px solid var(--tinta); border-radius: 10px; font-size: clamp(11px, 1.9vmin, 15px); text-align: center; padding: 2px 8px; }
+@keyframes pulsar { 50% { transform: scale(1.1); } }
+
+/* plateia */
+#plateia { background: rgba(42, 26, 82, 0.38); border: 3px solid var(--tinta); border-radius: 16px; color: #fff; pointer-events: auto; }
+#plateia > * { position: absolute; }
+.vai { display: grid; place-items: center; color: #fff; border: 3px solid var(--tinta); border-radius: 999px; box-shadow: 0 4px 0 var(--tinta); font-size: clamp(14px, 2.6vmin, 20px); padding: 0; }
+.vai.laranja { background: var(--laranja); }
+.vai.teal { background: var(--teal); }
+.vai:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--tinta); }
+.vai:disabled { opacity: 0.45; box-shadow: none; cursor: default; }
+.medidor { display: flex; border: 3px solid var(--tinta); border-radius: 999px; background: var(--trilho); overflow: hidden; }
+.medidor i { display: block; height: 100%; width: 0; transition: width 0.2s; }
+#medA { background: var(--laranja); }
+#medB { background: var(--teal); margin-left: auto; }
+#contador { display: grid; align-content: center; text-align: right; font-size: clamp(11px, 1.8vmin, 14px); line-height: 1.2; }
+
+/* reacoes (espectador) */
+#reacoes { display: flex; gap: 4px; justify-content: center; align-items: center; }
+#reacoes button { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--painel); border: 3px solid var(--tinta); box-shadow: 0 3px 0 var(--tinta); font-size: clamp(14px, 2.6vmin, 20px); padding: 0; }
+#reacoes button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--tinta); }
+.flutua { position: fixed; z-index: 3; pointer-events: none; font-size: 28px; animation: flutuar 1.3s ease-out forwards; }
+@keyframes flutuar { to { transform: translateY(-120px) scale(1.4); opacity: 0; } }
+
+/* balao do cliente */
+#balao { background: #fff; border: 3px solid var(--tinta); border-radius: 16px; padding: 4px 12px; font-size: clamp(13px, 2.4vmin, 20px); box-shadow: 3px 3px 0 var(--tinta); transform: rotate(4deg); white-space: nowrap; animation: subir 0.3s ease-out; }
+#balao::after { content: ''; position: absolute; left: -10px; bottom: 6px; width: 14px; height: 14px; background: #fff; border-left: 3px solid var(--tinta); border-bottom: 3px solid var(--tinta); transform: skewX(20deg) rotate(10deg); }
+
+.btn { width: 44px; height: 44px; border-radius: 13px; border: 3px solid var(--tinta); background: var(--painel); color: var(--tinta); display: grid; place-items: center; box-shadow: 0 4px 0 var(--tinta); padding: 0; }
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--tinta); }
+.btn svg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+#bMenu { top: calc(env(safe-area-inset-top, 0px) + 8px); right: calc(env(safe-area-inset-right, 0px) + 8px); }
+
+/* cartoes: saguao, resultado, menu */
+#saguao, #resultado, #menu, #anuncio { position: fixed; inset: 0; z-index: 4; display: grid; place-items: center; padding: 16px; }
+#saguao, #resultado { background: rgba(42, 26, 82, 0.35); pointer-events: none; }
+#saguao .cartao, #resultado .cartao { pointer-events: auto; }
+#menu, #anuncio { background: rgba(42, 26, 82, 0.6); }
+.cartao { width: min(380px, 100%); max-height: min(640px, calc(100% - 24px)); display: flex; flex-direction: column; gap: 12px; background: var(--painel); color: var(--tinta); border-radius: 22px; padding: 18px; box-shadow: 8px 8px 0 var(--tinta); border: 4px solid var(--tinta); text-align: center; }
+.cartao header { display: flex; align-items: center; gap: 8px; }
+.cartao h2 { margin: 0; flex: 1; font-size: clamp(22px, 4vmin, 30px); line-height: 1.1; }
+.cartao h3 { margin: 6px 0 0; font-size: 16px; text-align: left; }
+.cartao small { font-size: 14px; opacity: 0.8; }
+.fechar { width: 42px; height: 42px; border-radius: 13px; border: 3px solid var(--tinta); background: #fff; color: var(--tinta); font-size: 20px; }
+.corpo { overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+.linha { display: flex; gap: 8px; align-items: center; }
+.linha > * { flex: 1; }
+.acao { font-size: 17px; border: 3px solid var(--tinta); border-radius: 14px; padding: 11px 14px; background: var(--amarelo); color: var(--tinta); display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 5px 0 var(--tinta); }
+.acao.grande { font-size: 22px; padding: 15px 16px; }
+.acao.clara { background: #fff; }
+.acao.anuncio { background: #7d4de8; color: #fff; font-size: 15px; padding: 8px 12px; }
+.acao:disabled { opacity: 0.45; cursor: default; box-shadow: none; }
+.acao:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--tinta); }
+.acao.pulsar { animation: pulsar 0.9s ease-in-out infinite; }
+.anel { position: relative; width: 96px; height: 96px; margin: 0 auto; }
+.anel svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.anel circle { fill: none; stroke-width: 10; stroke-linecap: round; }
+.anel .fundo { stroke: #e5d2a8; }
+.anel .frente { stroke: var(--teal); stroke-dasharray: 264; stroke-dashoffset: 0; transition: stroke-dashoffset 0.25s linear; }
+.anel b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 30px; font-variant-numeric: tabular-nums; }
+.placarFim { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.placarFim b { font-size: 34px; }
+.placarFim small { font-size: 18px; color: var(--laranja); }
+.apelido { font-size: 18px; text-align: left; }
+.chapeus { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.chapeus button { aspect-ratio: 1; border-radius: 12px; border: 3px solid var(--tinta); background: #fff; font-size: 11px; padding: 0; display: grid; place-items: center; line-height: 1.1; }
+.chapeus button[aria-pressed="true"] { background: var(--amarelo); }
+.chapeus button:disabled { opacity: 0.4; cursor: default; }
+
+/* votacao: botoes transparentes sobre as cabecas */
+#votacao { position: fixed; inset: 0; z-index: 3; pointer-events: none; }
+.votoBtn { position: absolute; pointer-events: auto; background: transparent; border: 4px dashed rgba(255, 255, 255, 0.7); border-radius: 18px; color: #fff; font-size: clamp(16px, 3vmin, 24px); text-shadow: 2px 2px 0 var(--tinta); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; }
+.votoBtn:hover, .votoBtn:focus-visible { border-color: var(--amarelo); background: rgba(255, 217, 61, 0.15); }
+.votoBtn[aria-pressed="true"] { border-style: solid; border-color: var(--amarelo); background: rgba(255, 217, 61, 0.25); }
+
+/* aviso curto */
+#aviso { position: fixed; left: 50%; top: 18%; transform: translateX(-50%); z-index: 5; pointer-events: none; background: var(--painel); color: var(--tinta); border: 4px solid var(--tinta); border-radius: 20px; padding: 8px 20px; box-shadow: 5px 5px 0 var(--tinta); animation: subir 0.35s ease-out; white-space: nowrap; }
+#aviso b { font-size: clamp(18px, 3.6vmin, 28px); }
+@keyframes subir { from { transform: translate(-50%, 30px); opacity: 0; } }
+#balao { animation-name: none; }
+
+/* anuncio simulado (so local, sem SDK) */
+#anuncio { z-index: 6; background: rgba(10, 8, 24, 0.85); }
+#anuncio .cartao { align-items: center; }
+#anuncio b { font-size: 64px; line-height: 1; }
+
+@media (prefers-reduced-motion: reduce) { .pulsar, .letreiro.urgente, .flutua { animation: none !important; } }

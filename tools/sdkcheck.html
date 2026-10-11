@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>sdkcheck</title>
+<style>html,body{margin:0;background:#111;color:#eee;font:13px monospace}iframe{border:0;width:390px;height:844px;display:block}</style></head>
+<body><iframe id="f"></iframe><pre id="resultado"></pre>
+<script type="module">
+// Banco de testes do SDK: carrega o jogo num iframe (srcdoc, mesma origem) trocando a tag do
+// SDK da Poki por um SDK falso que registra cada chamada, e simula o jogador numa sala local
+// com bots (tempos rapidos). ?cenario=normal|recusa|bloqueado|pendente|lsquebrado|semservidor|espectador
+const q = new URLSearchParams(location.search);
+const cenario = q.get('cenario') || 'normal';
+const raiz = (q.get('raiz') || '').replace(/[^a-z0-9/_-]/gi, '');
+const log = [];
+const t0 = performance.now();
+const anotar = (...x) => log.push([Math.round(performance.now() - t0), ...x]);
+window.__anotar = anotar;
+const falhas = [];
+const conferir = (ok, msg) => { if (!ok) falhas.push(msg); };
+const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// O intervalo comercial falso dura 2,5 s; o rewarded responde em 300 ms.
+const sdkFalso = `
+<script>
+  const L = (...x) => parent.__anotar(...x);
+  window.PokiSDK = {
+    init() { L('init'); return ${cenario === 'pendente' ? 'new Promise(() => {})' : 'Promise.resolve()'}; },
+    gameLoadingFinished() { L('gameLoadingFinished'); },
+    gameplayStart() { L('gameplayStart'); },
+    gameplayStop() { L('gameplayStop'); },
+    commercialBreak(aoIniciar) { L('commercialBreak', parent.__calado()); if (aoIniciar) aoIniciar(); return new Promise((r) => setTimeout(() => { L('fimCommercial', parent.__calado()); r(); }, 2500)); },
+    rewardedBreak(o) { L('rewardedBreak', parent.__calado()); const ini = typeof o === 'function' ? o : o && o.onStart; if (ini) ini(); return new Promise((r) => setTimeout(() => r(${cenario === 'recusa' ? 'false' : 'true'}), 300)); },
+    measure(a, b, c) { L('measure', a + '/' + b + '/' + c); },
+    movePill() { L('movePill'); },
+    openExternalLink(u) { L('openExternalLink', u); },
+    getLanguage() { return 'pt'; },
+  };
+<\/script>`;
+const lsQuebrado = `
+<script>
+  const quebra = () => { throw new Error('quota'); };
+  Storage.prototype.getItem = quebra; Storage.prototype.setItem = quebra; Storage.prototype.removeItem = quebra;
+<\/script>`;
+window.__calado = () => { try { return !!f.contentWindow.__bb.audio.calado; } catch { return 'n/a'; } };
+
+const f = document.getElementById('f');
+let html = await (await fetch('../' + raiz + 'index.html')).text();
+const tag = /<!-- Unico script externo permitido pela Poki. -->\s*<script src="https:\/\/game-cdn\.poki\.com\/scripts\/v2\/poki-sdk\.js"><\/script>/;
+conferir(tag.test(html), 'index.html sem a tag do SDK da Poki no formato esperado');
+// semservidor: o endereco nao responde; o jogo precisa cair para bots sem texto tecnico. Os outros rodam em sala local.
+const ganchos = cenario === 'semservidor' ? { servidor: 'ws://127.0.0.1:9/ws', rapido: true, local: false } : { servidor: '', rapido: true, local: true };
+const teste = `<script>window.__barberTeste = ${JSON.stringify(ganchos)};<\/script>`;
+const extra = cenario === 'bloqueado' ? '' : cenario === 'lsquebrado' ? lsQuebrado + sdkFalso : sdkFalso;
+html = html.replace(tag, extra).replace('<head>', '<head><base href="/' + raiz + '">' + teste);
+f.srcdoc = html;
+await new Promise((r) => (f.onload = r));
+const w = () => f.contentWindow;
+const bb = () => w().__bb;
+const resumo = () => (bb() ? bb().resumo() : {});
+const nomes = () => log.map((l) => l[1]);
+const clique = (id) => { const el = w().document.getElementById(id); if (el) el.click(); };
+const vistos = [];
+const motorEstado = () => { try { return bb().sessao.motor.estado.estado + '/' + Math.round(bb().sessao.motor.estado.fimEm) + '/' + Math.round(w().performance.now()); } catch { return '?'; } };
+const ateEstado = async (estado, ms) => { for (let i = 0; i < ms / 100; i++) { const e = resumo().estado; if (vistos[vistos.length - 1] !== e) { vistos.push(e); anotar('estado', e, motorEstado(), resumo().rafAtivo); } if (e === estado) return true; await espera(100); } anotar('fimEspera', estado, resumo().estado, motorEstado(), resumo().rafAtivo); return resumo().estado === estado; };
+const toqueCanvas = () => {
+  const cv = w().document.getElementById('cena');
+  const r = (t, x, y) => cv.dispatchEvent(new (w().PointerEvent)(t, { clientX: x, clientY: y, pointerId: 1, pointerType: 'touch', bubbles: true }));
+  r('pointerdown', 60, 400); r('pointerup', 60, 400);
+};
+
+await espera(600);
+conferir(!!bb(), 'jogo nao subiu (sem __bb)');
+conferir(!w().document.title.startsWith('ERRO'), 'excecao no jogo: ' + w().document.title);
+if (cenario !== 'semservidor') conferir(resumo().estado !== '', 'sala nao montou');
+if (cenario === 'semservidor') {
+  await espera(7500);
+  conferir(resumo().rede === 'local', 'sem servidor o jogo nao caiu para o modo local (rede=' + resumo().rede + ')');
+  conferir(resumo().estado !== '', 'sala local nao montou');
+  conferir(nomes().includes('gameLoadingFinished'), 'gameLoadingFinished nao chamado');
+  conferir(nomes().filter((n) => n === 'gameLoadingFinished').length === 1, 'gameLoadingFinished mais de uma vez');
+  conferir(!/WebSocket|ECONN|erro|error|failed|servidor/i.test(w().document.body.innerText), 'texto tecnico na tela');
+  conferir(!nomes().includes('gameplayStart'), 'gameplayStart sem input');
+  clique('bJogar');
+  conferir(nomes().includes('gameplayStart'), 'gameplayStart nao veio no Jogar');
+} else if (cenario === 'bloqueado' || cenario === 'pendente') {
+  await espera(4600);
+  conferir(w().document.body.classList.contains('sem-anuncio'), 'sem SDK os botoes de video deviam sumir');
+  clique('bJogar');
+  conferir(await ateEstado('rodada', 8000), 'sem SDK a rodada nao comecou');
+  conferir(await ateEstado('resultado', 30000), 'sem SDK a rodada nao terminou');
+  conferir(w().getComputedStyle(w().document.getElementById('bDobrar')).display === 'none', 'sem SDK o botao de video apareceu');
+} else {
+  conferir(nomes().includes('init'), 'init nao chamado');
+  conferir(nomes().includes('gameLoadingFinished'), 'gameLoadingFinished nao chamado');
+  conferir(!nomes().includes('gameplayStart'), 'gameplayStart antes de qualquer toque');
+  await espera(1200);
+  conferir(!nomes().includes('gameplayStart'), 'gameplayStart sem input');
+  const espectador = cenario === 'espectador';
+  clique(espectador ? 'bAssistir' : 'bJogar');
+  conferir(nomes().includes('gameplayStart'), 'gameplayStart nao veio depois do toque');
+  for (let i = 0; i < 5 && !resumo().escolha; i++) { await espera(200); clique(espectador ? 'bAssistir' : 'bJogar'); }
+  conferir(await ateEstado('rodada', 10000), 'rodada nao comecou (escolha=' + resumo().escolha + ')');
+  // o barbeiro corta a rodada inteira (parado por 6 s nos tempos rapidos ele perderia a cadeira)
+  const cortarAteOFim = async () => {
+    const zonas = ['topo', 'lados', 'franja', 'bochechas', 'queixo'];
+    for (let i = 0; i < 200 && resumo().estado === 'rodada'; i++) { bb().traco(zonas[i % zonas.length], i % 5 === 3 ? 'navalha' : i % 5 === 1 ? 'maquina' : 'tesoura', 0.5); await espera(700); }
+  };
+  if (!espectador) {
+    conferir(resumo().papel === 'barbeiro', 'nao sentou na cadeira');
+    toqueCanvas();
+    await cortarAteOFim();
+    conferir(resumo().papel === 'barbeiro', 'perdeu a cadeira durante a rodada');
+  } else {
+    conferir(resumo().papel === 'espectador', 'nao ficou espectador');
+    conferir(await ateEstado('votacao', 20000), 'votacao nao abriu');
+    await espera(300);
+    clique('votarA');
+    conferir(log.some((l) => l[1] === 'measure' && /^voto\//.test(l[2])), 'measure do voto faltando');
+  }
+  conferir(await ateEstado('resultado', 30000), 'resultado nao chegou');
+  await espera(300);
+  if (!espectador) {
+    conferir(nomes().lastIndexOf('gameplayStop') > nomes().lastIndexOf('gameplayStart'), 'resultado sem gameplayStop');
+    const bD = w().document.getElementById('bDobrar');
+    conferir(!bD.hidden, 'botao de dobrar nao apareceu para o barbeiro');
+    const antes = resumo().pontos;
+    bD.click();
+    await espera(900);
+    const rw = log.find((l) => l[1] === 'rewardedBreak');
+    conferir(!!rw, 'rewardedBreak nao chamado');
+    conferir(rw && rw[2] === true, 'som nao estava mudo durante o rewarded');
+    const depois = resumo().pontos;
+    if (cenario === 'recusa') conferir(depois === antes, 'premio dado com rewarded false');
+    else conferir(antes > 0 && depois === antes * 2, `premio errado com rewarded true (${antes} -> ${depois})`);
+    conferir(!nomes().slice(nomes().lastIndexOf('rewardedBreak')).includes('gameplayStart'), 'gameplayStart depois do rewarded sem toque');
+    conferir(log.some((l) => l[1] === 'measure' && l[2] === 'rewarded/dobrar/interact'), 'measure do rewarded faltando');
+  }
+  // segunda rodada: a carencia (uma rodada rapida de sessao + uma rodada vista) libera o intervalo
+  conferir(await ateEstado('saguao', 15000), 'saguao da 2a rodada nao veio');
+  await espera(200);
+  clique(espectador ? 'bAssistir' : 'bJogar');
+  for (let i = 0; i < 5 && !resumo().escolha; i++) { await espera(200); clique(espectador ? 'bAssistir' : 'bJogar'); }
+  conferir(await ateEstado('rodada', 10000), '2a rodada nao comecou (escolha=' + resumo().escolha + ')');
+  if (!espectador) await cortarAteOFim();
+  else { if (await ateEstado('votacao', 20000)) { await espera(300); clique('votarB'); } }
+  conferir(await ateEstado('resultado', 30000), '2o resultado nao chegou');
+  if (!espectador) { await espera(200); clique('bContinuar'); }
+  conferir(await ateEstado('transicao', 15000), 'transicao nao veio');
+  // espera o intervalo falso terminar (2,5 s) e o jogo voltar
+  await espera(3500);
+  const cb = log.filter((l) => l[1] === 'commercialBreak');
+  conferir(cb.length === 1, `esperava 1 commercialBreak, veio ${cb.length}`);
+  if (cb.length) {
+    conferir(cb[0][2] === true, 'som nao estava mudo durante o commercialBreak');
+    const iCb = log.indexOf(cb[0]);
+    const antesCb = log.slice(0, iCb).map((l) => l[1]);
+    conferir(antesCb.lastIndexOf('gameplayStop') > antesCb.lastIndexOf('gameplayStart'), 'commercialBreak sem gameplayStop antes');
+    const fimCb = log.find((l) => l[1] === 'fimCommercial');
+    conferir(fimCb && fimCb[2] === true, 'som voltou antes do fim do anuncio');
+    const entre = log.slice(iCb + 1, fimCb ? log.indexOf(fimCb) : log.length).map((l) => l[1]);
+    conferir(!entre.includes('gameplayStart') && !entre.includes('gameplayStop') && !entre.includes('measure'), 'evento do SDK durante o anuncio: ' + entre.join(','));
+    conferir(!window.__calado(), 'som nao voltou depois do anuncio');
+  }
+  const medidas = log.filter((l) => l[1] === 'measure').map((l) => l[2]);
+  conferir(medidas.includes(espectador ? 'lobby/assistir/interact' : 'lobby/jogar/interact'), 'measure do saguao faltando');
+  conferir(medidas.includes('game/toque/first'), 'measure do primeiro toque faltando');
+  conferir(nomes().includes('movePill'), 'movePill nao chamado');
+  const gp = nomes().filter((n) => n === 'gameplayStart' || n === 'gameplayStop');
+  conferir(gp.every((n, i) => i === 0 || n !== gp[i - 1]), 'gameplayStart/Stop repetido: ' + gp.join(','));
+  // politica de privacidade pelo SDK
+  clique('bMenu');
+  await espera(100);
+  clique('bPrivacidade');
+  conferir(log.some((l) => l[1] === 'openExternalLink' && /privacidade/.test(l[2])), 'privacidade nao abriu pelo SDK');
+  clique('bFechar');
+}
+if (cenario === 'lsquebrado') conferir(resumo().rodada >= 1, 'com localStorage quebrado o jogo nao andou');
+const r = { cenario, passou: falhas.length === 0, falhas, log, estadoFinal: resumo(), titulo: (() => { try { return w().document.title; } catch { return '?'; } })() };
+document.title = r.passou ? 'PASSOU' : 'FALHOU';
+document.getElementById('resultado').textContent = 'RESULTADO ' + JSON.stringify(r);
+</script></body></html>

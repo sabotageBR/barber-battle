@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Barber Battle · laboratório</title>
+<style>
+  body { margin: 0; background: #1b1626; color: #eee; font: 14px system-ui, sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 12px 16px; background: #120e1c; position: sticky; top: 0; z-index: 2; }
+  header label { display: flex; gap: 6px; align-items: center; }
+  select, button { font: inherit; padding: 4px 8px; border-radius: 6px; border: 1px solid #444; background: #2a2340; color: #fff; }
+  main { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; padding: 16px; }
+  figure { margin: 0; display: grid; gap: 6px; }
+  figcaption { font-size: 13px; color: #bbb; }
+  iframe { border: 2px solid #3a3050; border-radius: 10px; background: #6b4bd6; width: 100%; }
+  iframe.retrato { aspect-ratio: 9 / 16; max-width: 400px; }
+  iframe.paisagem { aspect-ratio: 16 / 9; }
+  a { color: #9ad; }
+</style>
+</head>
+<body>
+<header>
+  <b>Laboratório</b>
+  <label>Estado <select id="estado"><option value="">saguão</option><option value="rodada" selected>rodada</option><option value="votacao">votação</option><option value="resultado">resultado</option></select></label>
+  <label>Papel <select id="papel"><option value="barbeiro">barbeiro</option><option value="espectador">espectador</option></select></label>
+  <label>Tema <select id="tema"><option value="">sorteio</option><option value="lenhador">Lenhador</option><option value="executivo">Executivo</option><option value="festa">Festa</option><option value="militar">Militar</option></select></label>
+  <label>Idioma <select id="lang"><option value="en">en</option><option value="pt" selected>pt</option><option value="es">es</option></select></label>
+  <label><input type="checkbox" id="novato" checked> novato (mão fantasma)</label>
+  <button id="recarregar">Recarregar</button>
+  <a href="../index.html?local&lang=pt" target="_blank">Jogar em tela cheia</a>
+  <a href="layouts.html" target="_blank">6 layouts</a>
+  <a href="personagens.html" target="_blank">personagens</a>
+</header>
+<main id="grade"></main>
+<script>
+const TELAS = [['retrato', 'Retrato 390×844'], ['paisagem', 'Paisagem 844×390'], ['paisagem', 'Poki 836×470']];
+const grade = document.getElementById('grade');
+const $ = (id) => document.getElementById(id);
+function montar() {
+  const q = new URLSearchParams({ local: '', rapido: '', fixo: '', semanuncio: '', lang: $('lang').value });
+  if ($('estado').value) q.set('estado', $('estado').value);
+  q.set('papel', $('papel').value);
+  if ($('tema').value) q.set('tema', $('tema').value);
+  if ($('novato').checked) q.set('novato', '');
+  const src = '../index.html?' + q.toString().replace(/=(&|$)/g, '$1');
+  grade.innerHTML = TELAS.map(([classe, rotulo]) => `<figure><iframe class="${classe}" src="${src}" title="${rotulo}"></iframe><figcaption>${rotulo} · <a href="${src}" target="_blank">abrir</a></figcaption></figure>`).join('');
+}
+for (const id of ['estado', 'papel', 'tema', 'lang', 'novato']) $(id).addEventListener('change', montar);
+$('recarregar').addEventListener('click', montar);
+montar();
+</script>
+</body>
+</html>

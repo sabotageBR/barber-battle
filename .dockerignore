@@ -1,0 +1,8 @@
+*
+!index.html
+!LICENCAS.txt
+!src/
+!servidor/
+servidor/node_modules/
+servidor/test/
+**/*.map

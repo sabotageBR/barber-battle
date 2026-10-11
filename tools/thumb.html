@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>thumb</title>
+<style>html,body{margin:0;overflow:hidden;background:#000}canvas{display:block}</style></head>
+<body><canvas id="c"></canvas><pre id="medidas"></pre>
+<script type="module">
+// Thumb da Poki desenhada com a arte do proprio jogo: o cliente da folha de
+// personagens (cabeca.js) no palco roxo, com a maquina e a tesoura entrando
+// pelos lados e aparas voando. Regras (developers.poki.com/guide/game-thumbnail):
+//   - quadrado 1:1 de no minimo 628 px, sangrado: sem borda, margem, tarja nem faixa lisa;
+//   - sem texto; um assunto principal (o rosto feliz do cliente), fundo limpo;
+//   - contraste alto e nenhuma cor perto do #83FFE7 do site; legivel nos tiles pequenos (?grade).
+//   ?opcao=a|b|c&s=1256   a thumb no tamanho s (a janela deve ter s x s)
+//   ?opcao=a&grade        folha de conferencia: tiles de 314 a 94 px sobre o #83FFE7
+//   ?opcao=a&medir        mede a thumb de 628 px e escreve o JSON em #medidas
+import { desenharCabeca, ARQUETIPOS } from '../src/render/cabeca.js';
+import { desenharMao } from '../src/render/ferramentas.js';
+import { SKIN } from '../src/render/skin.js';
+import { temaPorId } from '../src/jogo/temas.js';
+
+const q = new URLSearchParams(location.search);
+const opcao = q.get('opcao') || 'a';
+const S = Math.max(64, parseInt(q.get('s') || '1256', 10));
+const POKI = '#83FFE7';
+const TILES = [314, 204, 140, 94];
+
+/** Opcoes: cliente, expressao e ferramentas em cena. */
+const OPCOES = {
+  a: { arquetipo: 'tonhao', expressao: 'feliz', ferramentas: ['maquina', 'tesoura'], tema: 'lenhador' },
+  b: { arquetipo: 'valdir', expressao: 'impressionado', ferramentas: ['navalha', 'pente'], tema: 'lenhador' },
+  c: { arquetipo: 'jurandir', expressao: 'feliz', ferramentas: ['tesoura', 'pente'], tema: 'festa' },
+};
+const O = OPCOES[opcao] || OPCOES.a;
+const A = ARQUETIPOS[O.arquetipo];
+let ctx = null;
+let k = 1; // tudo num quadrado virtual de 600
+
+function fundo() {
+  const g = ctx.createRadialGradient(300, 120, 20, 300, 120, 620);
+  g.addColorStop(0, '#8a6cf0');
+  g.addColorStop(0.7, SKIN.fundo);
+  g.addColorStop(1, '#4e34a8');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 600, 600);
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  for (let y = 28; y < 600; y += 56) for (let x = 28; x < 600; x += 56) { ctx.beginPath(); ctx.arc(x, y, 7, 0, 6.28); ctx.fill(); }
+  // holofote atras do cliente
+  const h = ctx.createRadialGradient(300, 330, 40, 300, 330, 300);
+  h.addColorStop(0, 'rgba(255,217,61,0.35)');
+  h.addColorStop(1, 'rgba(255,217,61,0)');
+  ctx.fillStyle = h;
+  ctx.fillRect(0, 0, 600, 600);
+}
+
+function aparas() {
+  let s = 11;
+  const r = () => { s = (s * 1103515245 + 12345) >>> 0; return s / 4294967296; };
+  ctx.save();
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 34; i++) {
+    const a = r() * Math.PI * 2, d = 170 + r() * 150, l = 10 + r() * 16;
+    const x = 300 + Math.cos(a) * d, y = 300 + Math.sin(a) * d * 0.8;
+    ctx.strokeStyle = i % 3 ? A.cabelo : '#ffffff';
+    ctx.lineWidth = 5;
+    ctx.globalAlpha = 0.55 + r() * 0.45;
+    const rot = r() * Math.PI;
+    ctx.beginPath(); ctx.moveTo(x - Math.cos(rot) * l / 2, y - Math.sin(rot) * l / 2); ctx.lineTo(x + Math.cos(rot) * l / 2, y + Math.sin(rot) * l / 2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function desenhar(s) {
+  k = s / 600;
+  ctx.save(); ctx.scale(k, k);
+  fundo();
+  aparas();
+  // cadeira
+  ctx.fillStyle = SKIN.tinta; ctx.beginPath(); ctx.roundRect(150, 548, 300, 70, 26); ctx.fill();
+  ctx.fillStyle = SKIN.laranja; ctx.strokeStyle = SKIN.tinta; ctx.lineWidth = 7;
+  ctx.beginPath(); ctx.roundRect(150, 536, 300, 70, 26); ctx.fill(); ctx.stroke();
+  ctx.restore();
+  const zonas = { topo: [0.55, 0.9], lados: [0.45, 0.9], franja: [0.5, 0.9], bochechas: [0.85, 0.95], queixo: [0.9, 0.95], bigode: [0.7, 0.9] };
+  const caixa = { x: 300 * k - (236 * k) / 2, y: 92 * k, w: 236 * k, h: 300 * k };
+  desenharCabeca(ctx, { caixa, arquetipo: O.arquetipo, cliente: { zonas, brilho: 0.8, curativos: 0 }, tema: temaPorId(O.tema), expressao: O.expressao, rotacao: -3, squash: 0.02 });
+  // ferramentas entrando pelos lados
+  desenharMao(ctx, O.ferramentas[0], 140 * k, 250 * k, 1.9 * k);
+  ctx.save(); ctx.translate(600 * k, 0); ctx.scale(-1, 1);
+  desenharMao(ctx, O.ferramentas[1], 130 * k, 300 * k, 1.9 * k);
+  ctx.restore();
+}
+
+function thumb(cv, s) {
+  cv.width = s; cv.height = s;
+  ctx = cv.getContext('2d');
+  desenhar(s);
+}
+
+// ------------------------------------------------------------ medidas
+function lab(r, g, b) {
+  const lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  const R = lin(r), G = lin(g), B = lin(b);
+  const f = (t) => (t > 216 / 24389 ? Math.cbrt(t) : (24389 / 27 * t + 16) / 116);
+  const x = f((R * 0.4124 + G * 0.3576 + B * 0.1805) / 0.95047);
+  const y = f(R * 0.2126 + G * 0.7152 + B * 0.0722);
+  const z = f((R * 0.0193 + G * 0.1192 + B * 0.9505) / 1.08883);
+  return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+}
+function lum(r, g, b) {
+  const lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+}
+/** Contraste WCAG entre a pele do cliente e a media do fundo nos cantos. */
+function contrasteRosto(d, s) {
+  const amostra = (x0, y0) => { let r = 0, g = 0, b = 0, n = 0; for (let y = y0; y < y0 + 20; y++) for (let x = x0; x < x0 + 20; x++) { const i = (y * s + x) * 4; r += d[i]; g += d[i + 1]; b += d[i + 2]; n++; } return [r / n, g / n, b / n]; };
+  const cantos = [amostra(10, 10), amostra(s - 30, 10), amostra(10, s - 30), amostra(s - 30, s - 30)];
+  const fundo = cantos.reduce((a, c) => a + lum(...c), 0) / 4;
+  const n = parseInt(A.pele.slice(1), 16);
+  const rosto = lum((n >> 16) & 255, (n >> 8) & 255, n & 255);
+  return +((Math.max(fundo, rosto) + 0.05) / (Math.min(fundo, rosto) + 0.05)).toFixed(2);
+}
+function medir(cv) {
+  const s = cv.width;
+  const d = cv.getContext('2d').getImageData(0, 0, s, s).data;
+  const n = parseInt(POKI.slice(1), 16);
+  const P = lab((n >> 16) & 255, (n >> 8) & 255, n & 255);
+  const dist = (L, M) => Math.hypot(L[0] - M[0], L[1] - M[1], L[2] - M[2]);
+  const cor = (x, y) => { const i = (y * s + x) * 4; return lab(d[i], d[i + 1], d[i + 2]); };
+  let perto = 0, opaca = true, somaB = 0, nB = 0;
+  const anel = Math.round(s * 0.02);
+  for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
+    if (d[(y * s + x) * 4 + 3] < 255) opaca = false;
+    const e = dist(cor(x, y), P);
+    if (e < 25) perto++;
+    if (x < anel || y < anel || x >= s - anel || y >= s - anel) { somaB += e; nB++; }
+  }
+  const f = Math.round(s * 0.04);
+  const faixa = (x0, y0, w, h) => {
+    const labs = [];
+    for (let y = y0; y < y0 + h; y += 2) for (let x = x0; x < x0 + w; x += 2) labs.push(cor(x, y));
+    const m = [0, 1, 2].map((c) => labs.reduce((a, L) => a + L[c], 0) / labs.length);
+    return { m, lisa: labs.filter((L) => dist(L, m) < 3).length / labs.length };
+  };
+  const lados = { topo: [[0, 0, s, f], [0, f, s, f]], base: [[0, s - f, s, f], [0, s - 2 * f, s, f]], esq: [[0, 0, f, s], [f, 0, f, s]], dir: [[s - f, 0, f, s], [s - 2 * f, 0, f, s]] };
+  const tarja = [];
+  for (const [lado, [b, i]] of Object.entries(lados)) { const B = faixa(...b), I = faixa(...i); if (B.lisa > 0.9 && dist(B.m, I.m) > 8) tarja.push(lado); }
+  return { lado: s, pertoPoki: +(perto / (s * s)).toFixed(4), bordaPoki: +(somaB / nB).toFixed(1), tarja, contraste: { rosto: contrasteRosto(d, s) }, opaca };
+}
+
+const cv = document.getElementById('c');
+const pronto = () => {
+  if (q.has('grade')) {
+    const big = document.createElement('canvas');
+    thumb(big, 1256);
+    const m = 28;
+    cv.width = TILES.reduce((a, t) => a + t + m, m);
+    cv.height = TILES[0] + 2 * m;
+    const g = cv.getContext('2d');
+    g.fillStyle = POKI; g.fillRect(0, 0, cv.width, cv.height);
+    g.imageSmoothingQuality = 'high';
+    let x = m;
+    for (const t of TILES) {
+      const y = m + TILES[0] - t;
+      g.save(); g.beginPath(); g.roundRect(x, y, t, t, Math.max(8, t * 0.08)); g.clip();
+      g.drawImage(big, x, y, t, t); g.restore();
+      x += t + m;
+    }
+  } else if (q.has('medir')) {
+    thumb(cv, 628);
+    document.getElementById('medidas').textContent = JSON.stringify(medir(cv));
+  } else thumb(cv, S);
+  document.title = 'PRONTO';
+};
+pronto();
+</script></body></html>

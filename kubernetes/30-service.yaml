@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: barberbattle-server
+  namespace: barberbattle
+  labels:
+    app.kubernetes.io/name: barberbattle-server
+    app.kubernetes.io/part-of: barberbattle
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: barberbattle-server
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http

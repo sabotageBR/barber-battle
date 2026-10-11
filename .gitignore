@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dist-poki/
+.tmp/
+*.log
+# Pacote de upload para a Poki.
+*.zip
+# Gravacoes e quadros temporarios dos prints.
+.tmp/

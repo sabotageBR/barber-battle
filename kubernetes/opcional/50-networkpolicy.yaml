@@ -1,0 +1,20 @@
+# Opcional: so o ingress-nginx fala com o servidor. Aplicar por ultimo e observar os probes
+# por 2 minutos; se o kubelet for bloqueado pelo weave-npc, acrescentar ipBlock 192.168.12.0/24.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: barberbattle-server-allow-ingress
+  namespace: barberbattle
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: barberbattle-server
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000

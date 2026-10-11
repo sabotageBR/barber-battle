@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: barberbattle-config
+  namespace: barberbattle
+  labels:
+    app.kubernetes.io/part-of: barberbattle
+data:
+  PORT: "3000"
+  HOST: "0.0.0.0"
+  NODE_ENV: "production"
+  LOG_LEVEL: "info"
+  # Fase A (sem dominio comprado): http://barberbattle.io pela LAN. Na fase B tirar a entrada http.
+  ALLOWED_ORIGINS: "https://barberbattle.io,https://www.barberbattle.io,http://barberbattle.io,https://*.poki.com,https://*.poki.io,https://*.poki.dev,https://*.poki-cdn.com,https://*.poki-gdn.com,https://*.poki-user-content.com"
+  WS_ORIGIN_CHECK: "on"
+  SALA_MAX: "12"
+  HUMANOS_MAX: "6"
+  SALA_BOTS: "on"
+  SALA_BOTS_ALVO: "8"
+  DELTA_HZ: "6"
+  MAX_SOCKETS: "2000"
+  MAX_POR_IP: "8"
+  TRUST_PROXY: "1"
+  SHARD: "a"
+  URL_PUBLICA: "https://barberbattle.io"
+  ENCERRAMENTO_MS: "15000"

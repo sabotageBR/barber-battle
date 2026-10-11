@@ -1,0 +1,8 @@
+# Opcional na fase A: certificado autoassinado para testar wss:// pela LAN
+# (no Chrome, aceitar o aviso em https://barberbattle.io uma vez).
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned
+spec:
+  selfSigned: {}

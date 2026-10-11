@@ -1,0 +1,38 @@
+# Fase A (dominio ainda nao comprado): http pela LAN, sem TLS.
+# Fase B: trocar as anotacoes marcadas e descomentar o bloco tls (ver kubernetes/README.md).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: barberbattle
+  namespace: barberbattle
+  labels:
+    app.kubernetes.io/part-of: barberbattle
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-body-size: 2m
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"          # fase B: "true"
+    # cert-manager.io/cluster-issuer: letsencrypt-prod          # fase B: descomentar
+spec:
+  rules:
+    - host: barberbattle.io
+      http:
+        paths:
+          - path: /ws
+            pathType: Prefix
+            backend:
+              service:
+                name: barberbattle-server
+                port:
+                  number: 3000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: barberbattle-server
+                port:
+                  number: 3000
+  # tls:                                                        # fase B: descomentar
+  #   - hosts: [barberbattle.io]
+  #     secretName: tls-barberbattle-ingress

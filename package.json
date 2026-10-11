@@ -1,0 +1,16 @@
+{
+  "name": "barber-battle",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Barber Battle: duelo de barbearia multiplayer para a Poki (HTML + JavaScript puro).",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "servir": "node tools/servir.mjs",
+    "servidor": "node servidor/index.js",
+    "servidor:instalar": "npm --prefix servidor ci",
+    "servidor:test": "npm --prefix servidor test",
+    "sdkcheck": "node tools/sdkcheck.mjs",
+    "poki": "node --test test/*.test.js && node tools/thumb.mjs --final && node tools/empacotar.mjs && node tools/sdkcheck.mjs dist/ && node tools/prints-build.mjs"
+  }
+}
